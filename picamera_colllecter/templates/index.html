@@ -1,0 +1,51 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %} Raspberry Camera for Data Aquisition {% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  function toggleVideo() {
+    var img = document.getElementById("container")
+    if (img.src.includes('static')) {
+      img.src = "{{ url_for('video_feed') }}";
+      img.style = '-webkit-user-select: none;margin: auto;'
+    }
+    else {
+      img.src = "{{ url_for('static', filename='image.png') }}";
+      img.style = '';
+    }
+  }
+
+  function take_picture() {
+    $.get("/api/v1/resources/start", function (data) {
+      $("#container").attr("src", 'images/' + data);
+    });
+
+  }
+
+</script>
+{% endblock %}
+
+{% block content %}
+<div>
+  <h1>Image from Raspberry Pi</h1>
+  <div class="row-xs-12">
+    <table>
+      <tr>
+        <td>
+          <button style="width:100%;background-color: #4CAF50;" onclick="toggleVideo()">Show Live Stream</button>
+        </td>
+        <td> <button style="width:100%;background-color: #4CAF50;" onclick="take_picture()">Take Picture</button>
+        </td>
+        <td>
+          <p id="webservice_return"></p>
+        </td>
+      </tr>
+
+    </table>
+    <img id="container" src="{{ url_for('static', filename='image.png') }}">
+  </div>
+</div>
+
+{% endblock %}
