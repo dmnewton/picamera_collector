@@ -7,21 +7,23 @@
 <script>
   function toggleVideo() {
     var img = document.getElementById("container")
-    if (img.src.includes('static')) {
+    if (img.src.includes('image')) {
       img.src = "{{ url_for('video_feed') }}";
       img.style = '-webkit-user-select: none;margin: auto;'
     }
     else {
-      img.src = "{{ url_for('static', filename='image.png') }}";
-      img.style = '';
+      take_picture()
     }
   }
 
   function take_picture() {
-    $.get("/api/v1/resources/start", function (data) {
-      $("#container").attr("src", 'images/' + data);
-    });
-
+    $.get("/api/v1/resources/stopcamera", function (ret) {
+       // when video has stopped take picture
+        $.get("/api/v1/resources/takepicture", function (data) {
+          // when picture in buffer load
+          $("#container").attr("src", 'images/' + data);
+        });
+      });
   }
 
 </script>
@@ -29,7 +31,7 @@
 
 {% block content %}
 <div>
-  <h1>Image from Raspberry Pi</h1>
+  <h1>Video and Images from Raspberry Pi</h1>
   <div class="row-xs-12">
     <table>
       <tr>
