@@ -1,19 +1,34 @@
-import os
-import picamera
-from flask import Flask, render_template, redirect, url_for, Response ,send_file
-from flask_bootstrap import Bootstrap
-import time
 import io
+import os
+import time
 
-#from camera import Camera
+from flask import (Flask, Response,  render_template, send_file)
+
+from flask_bootstrap import Bootstrap
+from flask_httpauth import HTTPBasicAuth
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from camerapi import Camera
+
+import yaml
+with open(r'app_settings.yaml') as file:
+    config_data = yaml.load(file, Loader=yaml.FullLoader)
 
 camera = Camera()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret'
+app.config['SECRET_KEY'] = config_data['flask']['secret']
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+auth = HTTPBasicAuth()
+
+users = {k:generate_password_hash(v) for (k,v) in config_data['users'].items()}
+
+@auth.verify_password
+def verify_password(username, password):
+    if username in users and \
+            check_password_hash(users.get(username), password):
+        return username
 
 image_pos = 0
 image_buffer_size = 10
@@ -21,31 +36,16 @@ image_buffer = [ None for i in range(image_buffer_size)]
 
 Bootstrap(app)
 
-#@app.context_processor
-#def override_url_for():
-#    return dict(url_for=dated_url_for)
-
-# def dated_url_for(endpoint, **values):
-#     if endpoint == 'static':
-#         filename = values.get('filename', None)
-#         if filename:
-#             file_path = os.path.join(app.root_path,
-#                                      endpoint, filename)
-#             values['q'] = int(os.stat(file_path).st_mtime)
-#     return url_for(endpoint, **values)
-
 @app.route('/')
+@auth.login_required
 def index():
     return render_template('index.html')
 
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
+@auth.login_required
 def api_start():
-    stream = io.BytesIO()
-    global camera
-    camera.camera.resolution = (800, 600)
-    camera.camera.capture(stream, format='jpeg')
-    global image_buffer_size,image_buffer,image_pos
-    image_buffer[image_pos]=stream.getvalue()
+    global camera,image_buffer_size,image_buffer,image_pos
+    image_buffer[image_pos]=camera.take_still_picture()
     retval = str(image_pos)
     image_pos += 1
     image_pos = image_pos % image_buffer_size
@@ -61,6 +61,7 @@ def image_frombuff(pid):
                      cache_timeout=0)
 
 @app.route('/api/v1/resources/stopcamera', methods=['GET'])
+@auth.login_required
 def api_stopcamera():
     global camera
     camera.stop_camera()
@@ -73,6 +74,7 @@ def gen(camera):
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 @app.route('/video_feed')
+@auth.login_required
 def video_feed():
     global camera
     camera.start_camera()

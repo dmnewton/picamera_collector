@@ -1,0 +1,19 @@
+users:
+    admin: admin
+flask:
+  secret: secret
+camera-settings:
+- camera.resolution=(1280, 720)
+- camera.framerate=30
+- camera.iso = 100
+- sleep(2)
+- camera.shutter_speed = camera.exposure_speed
+- camera.exposure_mode = 'off'
+- g = camera.awb_gains
+- camera.awb_mode = 'off'
+- camera.awb_gains = g
+- camera.iso = 200
+- camera.shutter_speed = 10000
+
+
+

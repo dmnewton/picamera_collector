@@ -51,6 +51,12 @@ class Camera(object):
             print("stopping recording")
             self.camera.stop_recording()
             self.state = 0
+    
+    def take_still_picture(self):
+        stream = io.BytesIO()
+        self.camera.resolution = (800, 600)
+        self.camera.capture(stream, format='jpeg')
+        return stream.getvalue()
 
 def gen(camera):
     while True:
