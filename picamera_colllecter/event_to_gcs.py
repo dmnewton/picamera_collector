@@ -14,9 +14,6 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/pi/gdiaunicorn-a4464e10106
 storage_client = storage.Client()
 bucket = storage_client.bucket("roof_images")
 
-
-button = Button(17)
-
 camera = picamera.PiCamera()
 
 def print_camera_settings():
@@ -34,9 +31,19 @@ def configure_camera_std():
     g = camera.awb_gains
     camera.awb_mode = 'off'
     camera.awb_gains = g
-    camera.iso = 200
+    camera.iso = 800
     camera.shutter_speed = 10000
 
+
+def configure_camera_sport():
+    camera.resolution=(1280, 720)
+    camera.framerate=30
+    camera.exposure_mode = 'auto'
+    sleep(2)
+    print("configured sports")
+
+def exposure_speed():
+    return (camera.exposure_speed,camera.brightness)
 
 def configure_camera():
     with open(r'app_settings.yaml') as file:
@@ -76,9 +83,12 @@ def release_action():
     end=time.time()
     print("process time", end-start)
 
-configure_camera()
+if __name__ == '__main__':
+    configure_camera()
 
-button.when_released = release_action
+    button = Button(17)
 
-pause()
+    button.when_released = release_action
+
+    pause()
 
