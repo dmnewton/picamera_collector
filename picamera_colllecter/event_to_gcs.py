@@ -22,23 +22,23 @@ def print_camera_settings():
     print("shutter_speed microseconds",camera.shutter_speed)
 
 def configure_camera_std():
-    camera.resolution=(1280, 720)
-    camera.framerate=30
-    camera.iso = 100
+    camera.resolution=(1332, 990)
+    camera.iso = 800
+    camera.meter_mode = 'spot'
     sleep(2)
     camera.shutter_speed = camera.exposure_speed
     camera.exposure_mode = 'off'
     g = camera.awb_gains
     camera.awb_mode = 'off'
     camera.awb_gains = g
-    camera.iso = 800
-    camera.shutter_speed = 10000
-
+    
 
 def configure_camera_sport():
-    camera.resolution=(1280, 720)
-    camera.framerate=30
-    camera.exposure_mode = 'auto'
+    print("configuring sports")
+    camera.resolution=(1332, 990)
+    camera.iso = 800
+    camera.meter_mode = 'spot'
+    camera.exposure_mode = 'sports'
     sleep(2)
     print("configured sports")
 
@@ -75,20 +75,33 @@ def send_picture_to_gcs(image):
         )
     )
 
+def prepare_action():
+    global state
+    print("prepared")
+    state = 1
+    time.sleep(1)
+
 def release_action():
-    start=time.time()
+    global state
     print('release')
-    image = take_picture()
-    send_picture_to_gcs(image)
-    end=time.time()
-    print("process time", end-start)
+    if state == 2:
+        start=time.time()
+        print('release')
+        image = take_picture()
+        send_picture_to_gcs(image)
+        end=time.time()
+        print("process time", end-start)
+        state = 0
+        time.sleep(1)
 
 if __name__ == '__main__':
-    configure_camera()
+    configure_camera_sport()
+
+    state = 0
 
     button = Button(17)
 
-    button.when_released = release_action
+    button.when_activated = prepare_action
+    button.when_deactivated = release_action
 
     pause()
-

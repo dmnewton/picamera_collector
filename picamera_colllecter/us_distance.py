@@ -47,7 +47,7 @@ def calc_distance(start,stop):
     distance = distancet / 2
 
     if distance < 300:
-        print  ("Distance :", distance, " cm ")
+      #  print  ("Distance :", distance, " cm ")
         return distance
     return None
 
@@ -89,7 +89,7 @@ async def myWork():
 
     while True:
     # Send 10us pulse to trigger
-        print('exposure speed',ee.exposure_speed())
+       # print('exposure speed',ee.exposure_speed())
         start_val = None
         trigger.on()
         time.sleep(0.00001)
@@ -97,8 +97,8 @@ async def myWork():
         await asyncio.sleep(0.1)
 
 if __name__ == '__main__':
-    #ee.configure_camera_sport()
-    ee.configure_camera_std()
+    ee.configure_camera_sport()
+    #ee.configure_camera_std()
     loop = asyncio.get_event_loop()
     try:
         loop.run_until_complete(myWork())
