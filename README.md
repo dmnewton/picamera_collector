@@ -5,6 +5,7 @@ install lite  PI image <br>
 
 raspi-config<br>
   wifi<br>
+  camera<br>
   gpu 128<br>
 
 ```shell

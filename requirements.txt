@@ -1,3 +1,11 @@
 setuptools
 matplotlib
 numpy
+gpiozero
+picamera
+pyyaml
+google-cloud-storage
+RPi.GPIO
+flask
+flask_bootstrap
+flask_httpauth

@@ -1,0 +1,3 @@
+include picamera_colllecter/app_settings.yaml
+recursive-include picamera_colllecter/static *
+recursive-include picamera_colllecter/templates *
