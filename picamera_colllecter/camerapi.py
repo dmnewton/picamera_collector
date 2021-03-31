@@ -3,6 +3,12 @@ import picamera
 import threading
 import time
 
+import logging
+logger = logging.getLogger(__name__)
+
+
+c_res = (1332, 990)
+
 class Frame:
     def __init__(self):
         self.frame = None
@@ -35,26 +41,34 @@ class Camera(object):
 
     def start_camera(self):
         if self.state < 1:
-            self.camera.resolution = (800, 600)
+            self.camera.resolution = c_res
             self.camera.framerate = 30
             output = SplitFrames(self.frame,self.reset_message)
             self.camera.start_recording(output, format='mjpeg')
             self.state = 1
+
+    def still_sport_mode(self):
+        self.camera.resolution=(1332, 990)
+        self.camera.iso = 800
+        self.camera.meter_mode = 'spot'
+        self.camera.exposure_mode = 'sports'
+        time.sleep(2)
     
     def get_frame(self):
         with self.reset_message:
             self.reset_message.wait()
         return self.frame.frame
-    
-    def stop_camera(self):
-        if self.state == 1:
-            print("stopping recording")
-            self.camera.stop_recording()
-            self.state = 0
-    
+     
     def take_still_picture(self):
+        if self.state == 1:
+            logger.info("stopping recording")
+            self.camera.stop_recording()
+        if self.state != 0:
+            logger.info("sports mode")
+            self.still_sport_mode()
+            self.state = 0
         stream = io.BytesIO()
-        self.camera.resolution = (800, 600)
+        self.camera.resolution = c_res
         self.camera.capture(stream, format='jpeg')
         return stream.getvalue()
 

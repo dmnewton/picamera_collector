@@ -1,6 +1,4 @@
 import io
-import os
-import time
 
 from flask import (Flask, Response,  render_template, send_file)
 
@@ -10,9 +8,14 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from camerapi import Camera
 
+from to_gcs import send_picture_to_gcs
+
 import yaml
 with open(r'app_settings.yaml') as file:
     config_data = yaml.load(file, Loader=yaml.FullLoader)
+
+import logging
+logging.basicConfig(level=logging.INFO) 
 
 camera = Camera()
 
@@ -33,6 +36,7 @@ def verify_password(username, password):
 image_pos = 0
 image_buffer_size = 10
 image_buffer = [ None for i in range(image_buffer_size)]
+last_image = 0
 
 Bootstrap(app)
 
@@ -44,12 +48,22 @@ def index():
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
 @auth.login_required
 def api_start():
-    global camera,image_buffer_size,image_buffer,image_pos
+    global camera,image_buffer_size,image_buffer,image_pos,last_image
     image_buffer[image_pos]=camera.take_still_picture()
+    
     retval = str(image_pos)
+    last_image = image_pos
     image_pos += 1
     image_pos = image_pos % image_buffer_size
     return(retval)
+
+@app.route('/api/v1/resources/send_to_gcs/<int:pid>', methods=['GET'])
+@auth.login_required
+def image_to_gcs(pid):
+    global image_buffer
+    frame=image_buffer[pid]
+    rr = send_picture_to_gcs(frame)
+    return(rr)
 
 @app.route('/images/<int:pid>', methods=['GET'])
 def image_frombuff(pid):
@@ -60,12 +74,11 @@ def image_frombuff(pid):
                      mimetype='image/jpg',
                      cache_timeout=0)
 
-@app.route('/api/v1/resources/stopcamera', methods=['GET'])
+@app.route('/api/v1/resources/lastpicture', methods=['GET'])
 @auth.login_required
-def api_stopcamera():
-    global camera
-    camera.stop_camera()
-    return('OK')
+def api_lastpicturea():
+    global last_image
+    return(str(last_image))
 
 def gen(camera):
     while True:
@@ -82,4 +95,5 @@ def video_feed():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    app.run('0.0.0.0',threaded=True)
+    #app.run('0.0.0.0',threaded=True)
+    app.run('::',threaded=True)

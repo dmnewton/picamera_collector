@@ -17,14 +17,22 @@
   }
 
   function take_picture() {
-    $.get("/api/v1/resources/stopcamera", function (ret) {
-       // when video has stopped take picture
-        $.get("/api/v1/resources/takepicture", function (data) {
-          // when picture in buffer load
-          $("#container").attr("src", 'images/' + data);
-        });
-      });
+
+    $.get("/api/v1/resources/takepicture", function (data) {
+      // when picture in buffer load
+      $("#container").attr("src", 'images/' + data);
+      $("#webservice_return").text(data)
+    });
   }
+
+  function show_last_picture() {
+  $.get("/api/v1/resources/lastpicture", function (data) {
+  // when picture in buffer load
+    $("#container").attr("src", 'images/' + data);
+    $("#webservice_return").text(data)
+  });
+}
+
 
 </script>
 {% endblock %}
@@ -39,6 +47,8 @@
           <button style="width:100%;background-color: #4CAF50;" onclick="toggleVideo()">Show Live Stream</button>
         </td>
         <td> <button style="width:100%;background-color: #4CAF50;" onclick="take_picture()">Take Picture</button>
+        </td>
+        <td> <button style="width:100%;background-color: #4CAF50;" onclick="show_last_picture()">Show Last Picture</button>
         </td>
         <td>
           <p id="webservice_return"></p>
