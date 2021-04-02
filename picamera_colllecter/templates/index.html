@@ -18,7 +18,11 @@
 
   function take_picture() {
 
-    $.get("/api/v1/resources/takepicture", function (data) {
+    var e = document.getElementById("ddlMode");
+    var f = document.getElementById("ddlISO");
+    var pic_args = 'ddlMode=' + e.value + '&ddlISO=' + f.value
+
+    $.get("/api/v1/resources/takepicture", pic_args , function (data) {
       // when picture in buffer load
       $("#container").attr("src", 'images/' + data);
       $("#webservice_return").text(data)
@@ -52,6 +56,20 @@
         </td>
         <td>
           <p id="webservice_return"></p>
+        </td>
+        <td>
+        Mode<SELECT name="mode" id="ddlMode">
+          {% for c in modeList %}
+            <OPTION value={{c.name}}>{{c.name}}</option>
+          {% endfor %}
+          </SELECT>
+        </td>
+        <td>
+        ISO<SELECT name="iso" id="ddlISO">
+          {% for c in isoList %}
+            <OPTION value={{c.name}}>{{c.name}}</option>
+          {% endfor %}
+          </SELECT>
         </td>
       </tr>
 

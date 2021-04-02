@@ -1,9 +1,10 @@
 import io
 
-from flask import (Flask, Response,  render_template, send_file)
+from flask import (Flask, Response,  render_template, send_file, request)
 
 from flask_bootstrap import Bootstrap
 from flask_httpauth import HTTPBasicAuth
+from werkzeug.datastructures import cache_property
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from camerapi import Camera
@@ -43,14 +44,16 @@ Bootstrap(app)
 @app.route('/')
 @auth.login_required
 def index():
-    return render_template('index.html')
+    return render_template('index.html',modeList=[{'name':'auto'}, {'name':'sports'}],
+        isoList=[{'name':'100'}, {'name':'200'},{'name':'400'},{'name':'800'},{'name':'1600'}])
 
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
 @auth.login_required
 def api_start():
+    ddlMode = request.args.get('ddlMode')
+    ddlISO = int(request.args.get('ddlISO'))
     global camera,image_buffer_size,image_buffer,image_pos,last_image
-    image_buffer[image_pos]=camera.take_still_picture()
-    
+    image_buffer[image_pos]=camera.take_still_picture(ddlMode,ddlISO)
     retval = str(image_pos)
     last_image = image_pos
     image_pos += 1
@@ -72,7 +75,7 @@ def image_frombuff(pid):
     return send_file(io.BytesIO(frame),
                      attachment_filename=str(pid)+'.jpg',
                      mimetype='image/jpg',
-                     cache_timeout=0)
+                     cache_timeout=-1)
 
 @app.route('/api/v1/resources/lastpicture', methods=['GET'])
 @auth.login_required
@@ -96,4 +99,4 @@ def video_feed():
 
 if __name__ == '__main__':
     #app.run('0.0.0.0',threaded=True)
-    app.run('::',threaded=True)
+    app.run('::', threaded=True, debug=False)

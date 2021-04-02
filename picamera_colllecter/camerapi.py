@@ -38,6 +38,8 @@ class Camera(object):
         self.reset_message = threading.Condition()
         self.camera = picamera.PiCamera()
         self.state  = -1
+        self.iso = 100
+        self.mode = 'auto'
 
     def start_camera(self):
         if self.state < 1:
@@ -47,11 +49,14 @@ class Camera(object):
             self.camera.start_recording(output, format='mjpeg')
             self.state = 1
 
-    def still_sport_mode(self):
+    def change_mode(self,ddlMode,ddlISO):
+        self.mode = ddlMode
+        self.iso = ddlISO
+        self.state = 0
         self.camera.resolution=(1332, 990)
-        self.camera.iso = 800
+        self.camera.iso = self.iso
         self.camera.meter_mode = 'spot'
-        self.camera.exposure_mode = 'sports'
+        self.camera.exposure_mode = self.mode
         time.sleep(2)
     
     def get_frame(self):
@@ -59,17 +64,17 @@ class Camera(object):
             self.reset_message.wait()
         return self.frame.frame
      
-    def take_still_picture(self):
+    def take_still_picture(self,ddlMode,ddlISO):
         if self.state == 1:
             logger.info("stopping recording")
             self.camera.stop_recording()
-        if self.state != 0:
-            logger.info("sports mode")
-            self.still_sport_mode()
-            self.state = 0
+        if self.state != 0 or self.mode != ddlMode or self.iso != ddlISO:
+            logger.info("change mode")
+            self.change_mode(ddlMode,ddlISO)
         stream = io.BytesIO()
         self.camera.resolution = c_res
         self.camera.capture(stream, format='jpeg')
+        logger.info("shutter speed %d", self.camera.exposure_speed)
         return stream.getvalue()
 
 def gen(camera):
