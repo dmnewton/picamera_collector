@@ -19,13 +19,13 @@ Now you can connect via usb<br>
 
 ssh pi@raspberrypi.local
 
-password is raspberry <br>
+initial password is raspberry <br>
 
 raspi-config<br>
-  your wifi<br>
-  enable camera<br>
-  gpu 128<br>
-  change password
+*  your wifi<br>
+*  enable camera<br>
+*  gpu 128<br>
+*  change password
 
 ## install python and pip
 
@@ -40,7 +40,7 @@ pip3 install git+https://github.com/dmnewton/picamera_colllecter.git
 
 ## start as service
 ```shell
-sudo cp myscript.service /etc/systemd/system/myscript.service <br>
-sudo systemctl enable myscript.service <br>
-sudo systemctl status myscript.service
+sudo cp camera.service /etc/systemd/system/ <br>
+sudo systemctl enable camera.service <br>
+sudo systemctl status camera.service
 ```
