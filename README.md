@@ -47,7 +47,14 @@ pip3 install git+https://github.com/dmnewton/picamera_colllecter.git
 ## start as service
 ```shell
 cd /home/pi/.local/lib/python3.7/site-packages/picamera_colllecter
-sudo cp camera.service /etc/systemd/system/ <br>
-sudo systemctl enable camera.service <br>
+sudo cp camera.service /etc/systemd/system/
+sudo systemctl enable camera.service
 sudo systemctl status camera.service
 ```
+
+## copy over google service key
+```shell
+scp google-service-key.json pi@raspberrypi:
+```
+
+
