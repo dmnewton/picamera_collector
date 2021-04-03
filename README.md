@@ -25,12 +25,22 @@ raspi-config<br>
   your wifi<br>
   enable camera<br>
   gpu 128<br>
+  change password
+
+## install python and pip
 
 ```shell
 sudo apt update
 sudo apt install python3 git python3-pip
 ```
-
+## install module
 ```shell
 pip3 install git+https://github.com/dmnewton/picamera_colllecter.git
+```
+
+## start as service
+```shell
+sudo cp myscript.service /etc/systemd/system/myscript.service <br>
+sudo systemctl enable myscript.service <br>
+sudo systemctl status myscript.service
 ```
