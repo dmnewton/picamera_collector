@@ -9,7 +9,8 @@
     var img = document.getElementById("container")
     if (img.src.includes('image')) {
       img.src = "{{ url_for('video_feed') }}";
-      img.style = '-webkit-user-select: none;margin: auto;'
+      //img.style = 'height: 100%; width: 100%; object-fit: cover' 
+      //img.style = '-webkit-user-select: none;margin: auto;'
     }
     else {
       take_picture()
@@ -22,7 +23,7 @@
     var f = document.getElementById("ddlISO");
     var pic_args = 'ddlMode=' + e.value + '&ddlISO=' + f.value
 
-    $.get("/api/v1/resources/takepicture", pic_args , function (data) {
+    $.get("/api/v1/resources/takepicture", pic_args, function (data) {
       // when picture in buffer load
       $("#container").attr("src", 'images/' + data);
       $("#webservice_return").text(data)
@@ -30,52 +31,54 @@
   }
 
   function show_last_picture() {
-  $.get("/api/v1/resources/lastpicture", function (data) {
-  // when picture in buffer load
-    $("#container").attr("src", 'images/' + data);
-    $("#webservice_return").text(data)
-  });
-}
+    $.get("/api/v1/resources/lastpicture", function (data) {
+      // when picture in buffer load
+      $("#container").attr("src", 'images/' + data);
+      $("#webservice_return").text(data)
+    });
+  }
 
 
 </script>
 {% endblock %}
 
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='css/main.css')}}">
+{% endblock %}
+
 {% block content %}
-<div>
-  <h1>Video and Images from Raspberry Pi</h1>
-  <div class="row-xs-12">
-    <table>
-      <tr>
-        <td>
-          <button style="width:100%;background-color: #4CAF50;" onclick="toggleVideo()">Show Live Stream</button>
-        </td>
-        <td> <button style="width:100%;background-color: #4CAF50;" onclick="take_picture()">Take Picture</button>
-        </td>
-        <td> <button style="width:100%;background-color: #4CAF50;" onclick="show_last_picture()">Show Last Picture</button>
-        </td>
-        <td>
-          <p id="webservice_return"></p>
-        </td>
-        <td>
-        Mode<SELECT name="mode" id="ddlMode">
-          {% for c in modeList %}
-            <OPTION value={{c.name}}>{{c.name}}</option>
-          {% endfor %}
-          </SELECT>
-        </td>
-        <td>
-        ISO<SELECT name="iso" id="ddlISO">
-          {% for c in isoList %}
-            <OPTION value={{c.name}}>{{c.name}}</option>
-          {% endfor %}
-          </SELECT>
-        </td>
-      </tr>
 
-    </table>
-    <img id="container" src="{{ url_for('static', filename='image.jpeg') }}">
-  </div>
-</div>
+<header>
+  <h2>Video and Images from Raspberry Pi</h2>
+</header>
 
+<section>
+  <nav>
+    <ul>
+      <button style="width:100%;background-color: #4CAF50;" onclick="toggleVideo()">Show Live Stream</button>
+      <button style="width:100%;background-color: #4CAF50;" onclick="take_picture()">Take Picture</button>
+      <button style="width:100%;background-color: #4CAF50;" onclick="show_last_picture()">Show Last Picture</button>
+      Mode<SELECT name="mode" id="ddlMode">
+        {% for c in modeList %}
+        <OPTION value={{c.name}}>{{c.name}}</option>
+        {% endfor %}
+      </SELECT><br>
+      ISO<SELECT name="iso" id="ddlISO">
+        {% for c in isoList %}
+        <OPTION value={{c.name}}>{{c.name}}</option>
+        {% endfor %}
+      </SELECT><br>
+      <p id="webservice_return"></p>
+    </ul>
+  </nav>
+
+  <article>
+    <img id="container" style='height: 100%; width: 100%; object-fit: cover'
+      src="{{ url_for('static', filename='image.jpeg') }}">
+  </article>
+</section>
+<footer>
+  <p>Simple Image Capture to Cloud Storage to Support AI Projects</p>
+</footer>
 {% endblock %}
