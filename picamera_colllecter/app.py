@@ -11,6 +11,8 @@ from camerapi import Camera
 
 from to_gcs import send_picture_to_gcs
 
+import event as ev
+
 import yaml
 with open(r'app_settings.yaml') as file:
     config_data = yaml.load(file, Loader=yaml.FullLoader)
@@ -51,9 +53,10 @@ def index():
 @auth.login_required
 def api_start():
     ddlMode = request.args.get('ddlMode')
-    ddlISO = int(request.args.get('ddlISO'))
+    ddlISO =  request.args.get('ddlISO')
     global camera,image_buffer_size,image_buffer,image_pos,last_image
-    image_buffer[image_pos]=camera.take_still_picture(ddlMode,ddlISO)
+    camera.change_mode_if_required(ddlMode,ddlISO)
+    image_buffer[image_pos]=camera.take_still_picture()
     retval = str(image_pos)
     last_image = image_pos
     image_pos += 1
@@ -99,4 +102,5 @@ def video_feed():
 
 if __name__ == '__main__':
     #app.run('0.0.0.0',threaded=True)
+    bb =ev.ButtonEvent()
     app.run('::', threaded=True, debug=False)

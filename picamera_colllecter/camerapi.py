@@ -49,10 +49,24 @@ class Camera(object):
             self.camera.start_recording(output, format='mjpeg')
             self.state = 1
 
-    def change_mode(self,ddlMode,ddlISO):
-        self.mode = ddlMode
-        self.iso = ddlISO
-        self.state = 0
+    def change_mode_if_required(self,ddlMode,ddlISO):
+
+        no_change = True
+        if self.state == 1:
+            self.camera.stop_recording()
+            self.state = 0
+            no_change = False
+        
+        if ddlMode != None:
+            ddlISO=int(ddlISO)
+            if (self.mode != ddlMode) or (self.iso != ddlISO):
+                self.mode = ddlMode
+                self.iso = ddlISO
+                no_change = False
+
+        if no_change:
+            return
+    
         self.camera.resolution=(1332, 990)
         self.camera.iso = self.iso
         self.camera.meter_mode = 'spot'
@@ -64,18 +78,15 @@ class Camera(object):
             self.reset_message.wait()
         return self.frame.frame
      
-    def take_still_picture(self,ddlMode,ddlISO):
-        if self.state == 1:
-            logger.info("stopping recording")
-            self.camera.stop_recording()
-        if self.state != 0 or self.mode != ddlMode or self.iso != ddlISO:
-            logger.info("change mode")
-            self.change_mode(ddlMode,ddlISO)
+    def take_still_picture(self):
         stream = io.BytesIO()
         self.camera.resolution = c_res
         self.camera.capture(stream, format='jpeg')
         logger.info("shutter speed %d", self.camera.exposure_speed)
         return stream.getvalue()
+    
+    def stop_camera(self):
+        self.camera.stop_recording()
 
 def gen(camera):
     while True:

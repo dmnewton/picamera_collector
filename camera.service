@@ -1,0 +1,14 @@
+[Unit]
+Description=PI Camera data Collector
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 app.py
+WorkingDirectory=/home/pi/picamera_colllecter/picamera_colllecter
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
