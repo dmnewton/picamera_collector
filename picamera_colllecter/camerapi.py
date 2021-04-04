@@ -6,9 +6,6 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
-
-c_res = (1332, 990)
-
 class Frame:
     def __init__(self):
         self.frame = None
@@ -40,16 +37,21 @@ class Camera(object):
         self.state  = -1
         self.iso = 100
         self.mode = 'auto'
+        self.resolution = '640x480'
+    
+    @staticmethod
+    def to_res(s):
+        return [ int(x) for x in s.split('x')]
 
     def start_camera(self):
         if self.state < 1:
-            self.camera.resolution = c_res
+            self.camera.resolution = self.to_res(self.resolution)
             self.camera.framerate = 30
             output = SplitFrames(self.frame,self.reset_message)
             self.camera.start_recording(output, format='mjpeg')
             self.state = 1
 
-    def change_mode_if_required(self,ddlMode,ddlISO):
+    def change_mode_if_required(self,ddlMode,ddlISO,ddlResolution):
 
         no_change = True
         if self.state == 1:
@@ -59,15 +61,16 @@ class Camera(object):
         
         if ddlMode != None:
             ddlISO=int(ddlISO)
-            if (self.mode != ddlMode) or (self.iso != ddlISO):
+            if (self.mode != ddlMode) or (self.iso != ddlISO) or (self.resolution != ddlResolution) :
                 self.mode = ddlMode
                 self.iso = ddlISO
+                self.resolution = ddlResolution
                 no_change = False
 
         if no_change:
             return
     
-        self.camera.resolution=(1332, 990)
+        self.camera.resolution=self.to_res(self.resolution)
         self.camera.iso = self.iso
         self.camera.meter_mode = 'spot'
         self.camera.exposure_mode = self.mode
@@ -80,7 +83,6 @@ class Camera(object):
      
     def take_still_picture(self):
         stream = io.BytesIO()
-        self.camera.resolution = c_res
         self.camera.capture(stream, format='jpeg')
         logger.info("shutter speed %d", self.camera.exposure_speed)
         return stream.getvalue()

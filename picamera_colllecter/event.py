@@ -8,15 +8,16 @@ import logging
 logging.basicConfig(level=logging.INFO) 
 logger = logging.getLogger(__name__)
 
+from config import Configuration
+cf = Configuration()
+
 url = "http://[::1]:5000/api/v1/resources/takepicture"
 url_gcs = "http://[::1]:5000/api/v1/resources/send_to_gcs/{}"
 
 class ButtonEvent(object):
 
     def __init__(self):
-        with open(r'app_settings.yaml') as file:
-            config_data = yaml.load(file, Loader=yaml.FullLoader)
-        self.auth=next(iter(config_data['users'].items()))
+        self.auth=next(iter(cf.config_data['users'].items()))
         self.button = Button(17)
         self.button.when_deactivated = self.prepare_action
         self.button.when_activated = self.release_action

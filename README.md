@@ -1,12 +1,21 @@
-# picamera
+# picamera_collector
 
-install lite  PI image using etcher <br>
+To helps collect Image data for your AI project using the inexpensive Raspberry PI Camera.<br>
+This tool supports three important steps
+* Focus - in video mode allows you to focus your camera - important with HQ Camera
+* Lighting - find the best setting for you object - important if it's moving
+* Automation - use GPIO signals to trigger data collection
+
+## Instructions
+
+Install lite  raspios image using etcher <br>
 2021-03-04-raspios-buster-armhf-lite.zip
 
-mount on mac <br>
+mount on pc/mac <br>
 touch /Volumes/boot/ssh
 
-if pizero
+
+### If a pizero
 
 enable ssh access via USB so you can configure WLAN etc.
 
@@ -20,9 +29,11 @@ Now you can connect via usb<br>
 
 ssh pi@raspberrypi.local
 
-if normal pi
+### if normal pi
   touch /Volumes/boot/ssh
   ssh pi@raspberrypi
+
+## Boot
 
 initial password is raspberry <br>
 
@@ -33,13 +44,13 @@ raspi-config<br>
 *  gpu 128<br>
 *  change password fo pi
 
-## install python and pip
+## Install python and pip
 
 ```shell
 sudo apt update
 sudo apt install python3 git python3-pip
 ```
-## install module
+## install software as pip module
 ```shell
 pip3 install git+https://github.com/dmnewton/picamera_colllecter.git
 ```
@@ -49,8 +60,13 @@ pip3 install git+https://github.com/dmnewton/picamera_colllecter.git
 cd /home/pi/.local/lib/python3.7/site-packages/picamera_colllecter
 sudo cp camera.service /etc/systemd/system/
 sudo systemctl enable camera.service
+sudo systemctl start camera.service
 sudo systemctl status camera.service
 ```
+
+## Sendig to google cloud storage
+
+edit app_settings.yaml
 
 ## copy over google service key
 ```shell

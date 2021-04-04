@@ -4,6 +4,9 @@
 
 {% block scripts %}
 {{ super() }}
+
+<script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+
 <script>
   function toggleVideo() {
     var img = document.getElementById("container")
@@ -17,22 +20,40 @@
     }
   }
 
+  function exif_picture(imgx) {
+    delete imgx['exifdata']
+    EXIF.getData(imgx, function () {
+      var allMetaData = EXIF.getAllTags(this);
+      delete allMetaData['MakerNote']
+      delete allMetaData['thumbnail']
+      $("#allMetaDataSpan").text(JSON.stringify(allMetaData, null, "\t"))
+    });
+  }
+
+  var img = document.getElementById('container');
+  img.onload = function () {
+    if (img.src.includes('image')) {
+      exif_picture(img);
+    }
+  }
+
   function take_picture() {
 
     var e = document.getElementById("ddlMode");
     var f = document.getElementById("ddlISO");
-    var pic_args = 'ddlMode=' + e.value + '&ddlISO=' + f.value
+    var g = document.getElementById("ddlResolution");
+    var pic_args = 'ddlMode=' + e.value + '&ddlISO=' + f.value + '&ddlResolution=' + g.value
 
     $.get("/api/v1/resources/takepicture", pic_args, function (data) {
       // when picture in buffer load
       $("#container").attr("src", 'images/' + data);
       $("#webservice_return").text(data)
+
     });
   }
 
   function show_last_picture() {
     $.get("/api/v1/resources/lastpicture", function (data) {
-      // when picture in buffer load
       $("#container").attr("src", 'images/' + data);
       $("#webservice_return").text(data)
     });
@@ -59,6 +80,11 @@
       <button style="width:100%;background-color: #4CAF50;" onclick="toggleVideo()">Show Live Stream</button>
       <button style="width:100%;background-color: #4CAF50;" onclick="take_picture()">Take Picture</button>
       <button style="width:100%;background-color: #4CAF50;" onclick="show_last_picture()">Show Last Picture</button>
+      Resolution<SELECT name="resolution" id="ddlResolution">
+        {% for c in resolutionList %}
+        <OPTION value={{c.name}}>{{c.name}}</option>
+        {% endfor %}
+      </SELECT><br>
       Mode<SELECT name="mode" id="ddlMode">
         {% for c in modeList %}
         <OPTION value={{c.name}}>{{c.name}}</option>
@@ -69,7 +95,8 @@
         <OPTION value={{c.name}}>{{c.name}}</option>
         {% endfor %}
       </SELECT><br>
-      <p id="webservice_return"></p>
+      Frame Number <p id="webservice_return"></p>
+      EXIf Data <p id="allMetaDataSpan"></p>
     </ul>
   </nav>
 

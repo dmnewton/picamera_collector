@@ -13,9 +13,8 @@ from to_gcs import send_picture_to_gcs
 
 import event as ev
 
-import yaml
-with open(r'app_settings.yaml') as file:
-    config_data = yaml.load(file, Loader=yaml.FullLoader)
+from config import Configuration
+cf = Configuration()
 
 import logging
 logging.basicConfig(level=logging.INFO) 
@@ -23,12 +22,12 @@ logging.basicConfig(level=logging.INFO)
 camera = Camera()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = config_data['flask']['secret']
+app.config['SECRET_KEY'] = cf.config_data['flask']['secret']
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 auth = HTTPBasicAuth()
 
-users = {k:generate_password_hash(v) for (k,v) in config_data['users'].items()}
+users = {k:generate_password_hash(v) for (k,v) in cf.config_data['users'].items()}
 
 @auth.verify_password
 def verify_password(username, password):
@@ -43,19 +42,28 @@ last_image = 0
 
 Bootstrap(app)
 
+def to_lookup(ll):
+    return [ {'name':x} for x in ll]
+
 @app.route('/')
 @auth.login_required
 def index():
-    return render_template('index.html',modeList=[{'name':'auto'}, {'name':'sports'}],
-        isoList=[{'name':'100'}, {'name':'200'},{'name':'400'},{'name':'800'},{'name':'1600'}])
+    modeList=to_lookup(cf.config_data['modeList'])
+    isoList=to_lookup(cf.config_data['isoList'])
+    resolutionList=to_lookup(cf.config_data['resolution'])
+    return render_template('index.html',
+        modeList=modeList,
+        isoList=isoList,
+        resolutionList=resolutionList)
 
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
 @auth.login_required
 def api_start():
     ddlMode = request.args.get('ddlMode')
     ddlISO =  request.args.get('ddlISO')
+    ddlResolution =  request.args.get('ddlResolution')
     global camera,image_buffer_size,image_buffer,image_pos,last_image
-    camera.change_mode_if_required(ddlMode,ddlISO)
+    camera.change_mode_if_required(ddlMode,ddlISO,ddlResolution)
     image_buffer[image_pos]=camera.take_still_picture()
     retval = str(image_pos)
     last_image = image_pos
