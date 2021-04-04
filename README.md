@@ -27,7 +27,6 @@ modules-load=dwc2,g_ether
 
 Now you can connect via usb<br>
 
-ssh pi@raspberrypi.local
 
 ### if normal pi
   touch /Volumes/boot/ssh
@@ -35,9 +34,13 @@ ssh pi@raspberrypi.local
 
 ## Boot
 
+ssh pi@raspberrypi
+or
+ssh pi@raspberrypi.local (when via USB)
+
 initial password is raspberry <br>
 
-raspi-config<br>
+sudo raspi-config<br>
 *  hostname
 *  your wifi<br>
 *  enable camera<br>
