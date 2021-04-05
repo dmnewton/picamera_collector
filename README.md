@@ -12,12 +12,14 @@ Install lite  raspios image using etcher <br>
 2021-03-04-raspios-buster-armhf-lite.zip
 
 mount on pc/mac <br>
+enable ssh on boot<br>
 touch /Volumes/boot/ssh
 
 
 ### If a pizero
 
-enable ssh access via USB so you can configure WLAN etc.
+enable device access via USB so you can configure WLAN etc.<br>
+or you can connect keyboard and screen<br>
 
 edit /Volumes/boot/config.txt<br>
 dtoverlay=dwc2
@@ -28,15 +30,11 @@ modules-load=dwc2,g_ether
 Now you can connect via usb<br>
 
 
-### if normal pi
-  touch /Volumes/boot/ssh
-  ssh pi@raspberrypi
+## Install SD card and boot
 
-## Boot
-
-ssh pi@raspberrypi
-or
-ssh pi@raspberrypi.local (when via USB)
+ssh pi@raspberrypi<br>
+or<br>
+ssh pi@raspberrypi.local (when via USB)<br>
 
 initial password is raspberry <br>
 
