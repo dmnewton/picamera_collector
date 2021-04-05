@@ -42,7 +42,8 @@
     var e = document.getElementById("ddlMode");
     var f = document.getElementById("ddlISO");
     var g = document.getElementById("ddlResolution");
-    var pic_args = 'ddlMode=' + e.value + '&ddlISO=' + f.value + '&ddlResolution=' + g.value
+    var h = document.getElementById("ddlJPEG");
+    var pic_args = 'ddlMode=' + e.value + '&ddlISO=' + f.value + '&ddlResolution=' + g.value + '&ddlJPEG=' + h.value  
 
     $.get("/api/v1/resources/takepicture", pic_args, function (data) {
       // when picture in buffer load
@@ -95,13 +96,18 @@
         <OPTION value={{c.name}}>{{c.name}}</option>
         {% endfor %}
       </SELECT><br>
+      JPEG Quality<SELECT name="jpeg" id="ddlJPEG">
+        {% for c in jpegqualityList %}
+        <OPTION value={{c.name}}>{{c.name}}</option>
+        {% endfor %}
+      </SELECT><br>
       Frame Number <p id="webservice_return"></p>
       EXIf Data <p id="allMetaDataSpan"></p>
     </ul>
   </nav>
 
   <article>
-    <img id="container" style='height: 100%; width: 100%; object-fit: cover'
+    <img id="container" style='max-width:100%; max-height:100%; width:auto; height:auto;'
       src="{{ url_for('static', filename='image.jpeg') }}">
   </article>
 </section>

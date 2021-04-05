@@ -51,10 +51,12 @@ def index():
     modeList=to_lookup(cf.config_data['modeList'])
     isoList=to_lookup(cf.config_data['isoList'])
     resolutionList=to_lookup(cf.config_data['resolution'])
+    jpegqualityList=to_lookup(cf.config_data['jpegquality'])
     return render_template('index.html',
         modeList=modeList,
         isoList=isoList,
-        resolutionList=resolutionList)
+        resolutionList=resolutionList,
+        jpegqualityList=jpegqualityList)
 
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
 @auth.login_required
@@ -62,8 +64,9 @@ def api_start():
     ddlMode = request.args.get('ddlMode')
     ddlISO =  request.args.get('ddlISO')
     ddlResolution =  request.args.get('ddlResolution')
+    ddlJPEG = request.args.get('ddlJPEG')
     global camera,image_buffer_size,image_buffer,image_pos,last_image
-    camera.change_mode_if_required(ddlMode,ddlISO,ddlResolution)
+    camera.change_mode_if_required(ddlMode,ddlISO,ddlResolution,ddlJPEG)
     image_buffer[image_pos]=camera.take_still_picture()
     retval = str(image_pos)
     last_image = image_pos

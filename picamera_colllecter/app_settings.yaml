@@ -6,6 +6,11 @@ gcs:
   authfile: /home/pi/gdiaunicorn-a4464e10106e.json
   bucket: roof_images
   directory: test
+initial_settings:
+ resolution: 1920x1080
+ mode: auto
+ iso: 100
+ jpegquality : 85
 resolution:
 - 640x480
 - 1280x720
@@ -22,3 +27,8 @@ isoList:
 - 400
 - 800
 - 1600
+jpegquality:
+- 85
+- 90
+- 95
+- 100

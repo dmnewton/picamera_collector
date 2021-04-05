@@ -6,6 +6,9 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
+from config import Configuration
+cf = Configuration().config_data['initial_settings']
+
 class Frame:
     def __init__(self):
         self.frame = None
@@ -35,9 +38,10 @@ class Camera(object):
         self.reset_message = threading.Condition()
         self.camera = picamera.PiCamera()
         self.state  = -1
-        self.iso = 100
-        self.mode = 'auto'
-        self.resolution = '640x480'
+        self.iso = cf['iso']
+        self.mode = cf['mode']
+        self.resolution = cf['resolution']
+        self.jpegquality = cf['jpegquality']
     
     @staticmethod
     def to_res(s):
@@ -46,12 +50,15 @@ class Camera(object):
     def start_camera(self):
         if self.state < 1:
             self.camera.resolution = self.to_res(self.resolution)
-            self.camera.framerate = 30
+            if self.camera.resolution[0]>3000:
+                self.camera.framerate = 15
+            else:    
+                self.camera.framerate = 30
             output = SplitFrames(self.frame,self.reset_message)
-            self.camera.start_recording(output, format='mjpeg')
+            self.camera.start_recording(output, format='mjpeg',quality=self.jpegquality)
             self.state = 1
 
-    def change_mode_if_required(self,ddlMode,ddlISO,ddlResolution):
+    def change_mode_if_required(self,ddlMode,ddlISO,ddlResolution,ddlJPEG):
 
         no_change = True
         if self.state == 1:
@@ -66,6 +73,11 @@ class Camera(object):
                 self.iso = ddlISO
                 self.resolution = ddlResolution
                 no_change = False
+            if self.jpegquality != int(ddlJPEG):
+                self.jpegquality = int(ddlJPEG)
+        if self.state == -1:
+            self.state = 0
+            no_change = False
 
         if no_change:
             return
@@ -83,7 +95,7 @@ class Camera(object):
      
     def take_still_picture(self):
         stream = io.BytesIO()
-        self.camera.capture(stream, format='jpeg')
+        self.camera.capture(stream, format='jpeg',quality=self.jpegquality)
         logger.info("shutter speed %d", self.camera.exposure_speed)
         return stream.getvalue()
     
