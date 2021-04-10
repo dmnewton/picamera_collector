@@ -1,4 +1,5 @@
 import io
+import importlib
 
 from flask import (Flask, Response,  render_template, send_file, request)
 
@@ -9,12 +10,15 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from camerapi import Camera
 
-from to_gcs import send_picture_to_gcs
-
-import event as ev
 
 from config import Configuration
 cf = Configuration()
+
+event_module = cf.config_data['plugins']['event']
+store_module = cf.config_data['plugins']['store']
+
+ev = importlib.import_module(event_module)
+sm = importlib.import_module(store_module)
 
 import logging
 logging.basicConfig(level=logging.INFO) 
@@ -79,7 +83,7 @@ def api_start():
 def image_to_gcs(pid):
     global image_buffer
     frame=image_buffer[pid]
-    rr = send_picture_to_gcs(frame)
+    rr = sm.store_action(frame)
     return(rr)
 
 @app.route('/images/<int:pid>', methods=['GET'])
@@ -113,5 +117,5 @@ def video_feed():
 
 if __name__ == '__main__':
     #app.run('0.0.0.0',threaded=True)
-    bb =ev.ButtonEvent()
+    bb =ev.TriggerEvent(cf)
     app.run('::', threaded=True, debug=False)

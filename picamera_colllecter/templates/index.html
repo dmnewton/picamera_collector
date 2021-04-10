@@ -43,7 +43,7 @@
     var f = document.getElementById("ddlISO");
     var g = document.getElementById("ddlResolution");
     var h = document.getElementById("ddlJPEG");
-    var pic_args = 'ddlMode=' + e.value + '&ddlISO=' + f.value + '&ddlResolution=' + g.value + '&ddlJPEG=' + h.value  
+    var pic_args = 'ddlMode=' + e.value + '&ddlISO=' + f.value + '&ddlResolution=' + g.value + '&ddlJPEG=' + h.value
 
     $.get("/api/v1/resources/takepicture", pic_args, function (data) {
       // when picture in buffer load
@@ -78,31 +78,58 @@
 <section>
   <nav>
     <ul>
-      <button style="width:100%;background-color: #4CAF50;" onclick="toggleVideo()">Show Live Stream</button>
-      <button style="width:100%;background-color: #4CAF50;" onclick="take_picture()">Take Picture</button>
-      <button style="width:100%;background-color: #4CAF50;" onclick="show_last_picture()">Show Last Picture</button>
-      Resolution<SELECT name="resolution" id="ddlResolution">
-        {% for c in resolutionList %}
-        <OPTION value={{c.name}}>{{c.name}}</option>
-        {% endfor %}
-      </SELECT><br>
-      Mode<SELECT name="mode" id="ddlMode">
-        {% for c in modeList %}
-        <OPTION value={{c.name}}>{{c.name}}</option>
-        {% endfor %}
-      </SELECT><br>
-      ISO<SELECT name="iso" id="ddlISO">
-        {% for c in isoList %}
-        <OPTION value={{c.name}}>{{c.name}}</option>
-        {% endfor %}
-      </SELECT><br>
-      JPEG Quality<SELECT name="jpeg" id="ddlJPEG">
-        {% for c in jpegqualityList %}
-        <OPTION value={{c.name}}>{{c.name}}</option>
-        {% endfor %}
-      </SELECT><br>
-      Frame Number <p id="webservice_return"></p>
-      EXIf Data <p id="allMetaDataSpan"></p>
+      <table style="width: 100%;">
+        <tr><button style="width:100%;background-color: #4CAF50;" onclick="toggleVideo()">Show Live Stream</button></tr>
+        <tr> <button style="width:100%;background-color: #4CAF50;" onclick="take_picture()">Take Picture</button></tr>
+        <tr><button style="width:100%;background-color: #4CAF50;" onclick="show_last_picture()">Show Last
+            Picture</button></tr>
+        <tr>
+          <td style="width: 50%">Resolution</td>
+          <td style="width: 50%"><SELECT name="resolution" id="ddlResolution">
+              {% for c in resolutionList %}
+              <OPTION value={{c.name}}>{{c.name}}</option>
+              {% endfor %}
+            </SELECT></td>
+        </tr>
+        <tr>
+          <td>Mode</td>
+          <td><SELECT name="mode" id="ddlMode">
+              {% for c in modeList %}
+              <OPTION value={{c.name}}>{{c.name}}</option>
+              {% endfor %}
+            </SELECT></td>
+        </tr>
+        <tr>
+          <td>ISO</td>
+          <td><SELECT name="iso" id="ddlISO">
+              {% for c in isoList %}
+              <OPTION value={{c.name}}>{{c.name}}</option>
+              {% endfor %}
+            </SELECT></td>
+        </tr>
+        <tr>
+          <td>JPEG Quality</td>
+          <td><SELECT name="jpeg" id="ddlJPEG">
+              {% for c in jpegqualityList %}
+              <OPTION value={{c.name}}>{{c.name}}</option>
+              {% endfor %}
+            </SELECT></td>
+        </tr>
+        <tr>
+          <td>Frame Number</td>
+          <td id="webservice_return"></td>
+        </tr>
+      </table>
+      <table>
+        <tr>
+          <td>EXIf Data</td>
+        </tr>
+        <tr>
+          <td>
+            <p id="allMetaDataSpan"></p>
+          </td>
+        </tr>
+      </table>
     </ul>
   </nav>
 

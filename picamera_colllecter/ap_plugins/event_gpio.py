@@ -2,21 +2,17 @@ from gpiozero import Button
 import time
 from signal import pause
 import requests
-import yaml
 
 import logging
 logging.basicConfig(level=logging.INFO) 
 logger = logging.getLogger(__name__)
 
-from config import Configuration
-cf = Configuration()
-
 url = "http://[::1]:5000/api/v1/resources/takepicture"
 url_gcs = "http://[::1]:5000/api/v1/resources/send_to_gcs/{}"
 
-class ButtonEvent(object):
+class TriggerEvent(object):
 
-    def __init__(self):
+    def __init__(self,cf):
         self.auth=next(iter(cf.config_data['users'].items()))
         self.button = Button(17)
         self.button.when_deactivated = self.prepare_action
@@ -44,6 +40,6 @@ if __name__ == '__main__':
 
     logger.info("starting")
 
-    bb = ButtonEvent()
+    bb = TriggerEvent()
 
     pause()

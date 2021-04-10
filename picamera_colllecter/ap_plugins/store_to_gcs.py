@@ -11,7 +11,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cf['authfile']
 storage_client = storage.Client()
 bucket = storage_client.bucket(cf['bucket'])
 
-def send_picture_to_gcs(image):
+def store_action(image):
     epoch_time = int(time.time())
     destination_blob_name = "{}/image-{}.jpg".format(cf['directory'],epoch_time)
 

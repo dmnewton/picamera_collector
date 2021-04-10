@@ -2,6 +2,9 @@ users:
     admin: admin
 flask:
   secret: supersecret
+plugins:
+  event: ap_plugins.event_gpio 
+  store: ap_plugins.store_to_gcs
 gcs:
   authfile: /home/pi/gdiaunicorn-a4464e10106e.json
   bucket: roof_images
@@ -9,7 +12,7 @@ gcs:
 initial_settings:
  resolution: 1920x1080
  mode: auto
- iso: 100
+ iso: 0
  jpegquality : 85
 resolution:
 - 640x480
@@ -22,6 +25,7 @@ modeList:
 - auto
 - sports
 isoList:
+- 0
 - 100
 - 200
 - 400
