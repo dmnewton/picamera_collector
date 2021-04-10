@@ -10,7 +10,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from camerapi import Camera
 
-
 from config import Configuration
 cf = Configuration()
 
