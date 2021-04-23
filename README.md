@@ -65,7 +65,17 @@ sudo systemctl start camera.service
 sudo systemctl status camera.service
 ```
 
-## Sendig to google cloud storage
+## access
+
+http://localhost:5000
+
+userid password are defined in the yaml
+
+# plugins
+
+One definable triger and storage function
+
+## Sending to google cloud storage
 
 edit app_settings.yaml
 
