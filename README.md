@@ -9,6 +9,8 @@ This tool supports three important steps
 ## Instructions
 
 Install lite  raspios image using etcher <br>
+https://www.balena.io/etcher/
+
 2021-03-04-raspios-buster-armhf-lite.zip
 
 mount on pc/mac <br>
