@@ -1,10 +1,12 @@
 # picamera_collector
 
-To helps collect Image data for your AI project using the inexpensive Raspberry PI Camera.<br>
+To package helps you collect pictures for your AI project using the inexpensive Raspberry PI Camera.<br>
 This tool supports three important steps
 * Focus - in video mode allows you to focus your camera - important with HQ Camera
 * Lighting - find the best setting for you object - important if it's moving
 * Automation - use GPIO signals to trigger data collection
+
+The trigger can come from an remote device
 
 ## Instructions
 
