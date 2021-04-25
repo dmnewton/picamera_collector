@@ -1,19 +1,27 @@
+# protect web server
 users:
     admin: admin
+# secret for flask state store
 flask:
   secret: supersecret
+# plugins to trigger than a picture is take and store the resulting picture
 plugins:
-  event: ap_plugins.event_gpio 
+  event: ap_plugins.event_dummy
   store: ap_plugins.store_to_gcs
+# if the triger is on a remote host where is the camaera
+camerahost: picameradev
+# configuretion for google cloud storage plugin
 gcs:
   authfile: /home/pi/gdiaunicorn-a4464e10106e.json
   bucket: roof_images
   directory: test
+# initial setting for camera on boot 
 initial_settings:
  resolution: 1920x1080
  mode: auto
  iso: 0
  jpegquality : 85
+# possible resolutions (standards)
 resolution:
 - 640x480
 - 1280x720
@@ -21,9 +29,11 @@ resolution:
 - 1640x1232
 - 1920x1080
 - 3280x2464
+# standard cmaera modes
 modeList:
 - auto
 - sports
+# list o posible ISO settings
 isoList:
 - 0
 - 100
@@ -31,6 +41,7 @@ isoList:
 - 400
 - 800
 - 1600
+# compressio quality of jpeg file
 jpegquality:
 - 85
 - 90

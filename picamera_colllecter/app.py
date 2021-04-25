@@ -1,7 +1,8 @@
 import io
 import importlib
+from threading import Thread
 
-from flask import (Flask, Response,  render_template, send_file, request)
+from flask import (Flask, Response,  render_template, send_file, request ,jsonify)
 
 from flask_bootstrap import Bootstrap
 from flask_httpauth import HTTPBasicAuth
@@ -48,6 +49,22 @@ Bootstrap(app)
 def to_lookup(ll):
     return [ {'name':x} for x in ll]
 
+def take_picture():
+    "take picture and store in ring buffer"
+    global camera,image_buffer_size,image_buffer,image_pos,last_image
+    image_buffer[image_pos]=camera.take_still_picture()
+    frame=image_buffer[image_pos]
+    last_image = image_pos
+    image_pos += 1
+    image_pos = image_pos % image_buffer_size
+    return frame,last_image
+
+def threaded_task():
+    "take and store picture in background"
+    frame,last_image = take_picture()
+    sm.store_action(frame)
+
+
 @app.route('/')
 @auth.login_required
 def index():
@@ -61,6 +78,16 @@ def index():
         resolutionList=resolutionList,
         jpegqualityList=jpegqualityList)
 
+
+@app.route("/api/v1/resources/takesend")
+#@auth.login_required
+def takesend():
+    thread = Thread(target=threaded_task, args=())
+    thread.daemon = True
+    thread.start()
+    return jsonify({'thread_name': str(thread.name),
+                    'started': True})
+
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
 @auth.login_required
 def api_start():
@@ -68,14 +95,10 @@ def api_start():
     ddlISO =  request.args.get('ddlISO')
     ddlResolution =  request.args.get('ddlResolution')
     ddlJPEG = request.args.get('ddlJPEG')
-    global camera,image_buffer_size,image_buffer,image_pos,last_image
+    global camera
     camera.change_mode_if_required(ddlMode,ddlISO,ddlResolution,ddlJPEG)
-    image_buffer[image_pos]=camera.take_still_picture()
-    retval = str(image_pos)
-    last_image = image_pos
-    image_pos += 1
-    image_pos = image_pos % image_buffer_size
-    return(retval)
+    frame,last_image = take_picture()
+    return(str(last_image))
 
 @app.route('/api/v1/resources/send_to_gcs/<int:pid>', methods=['GET'])
 @auth.login_required
