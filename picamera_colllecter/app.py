@@ -29,15 +29,17 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = cf.config_data['flask']['secret']
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
+
+# simple security
 auth = HTTPBasicAuth()
-
 users = {k:generate_password_hash(v) for (k,v) in cf.config_data['users'].items()}
-
 @auth.verify_password
 def verify_password(username, password):
     if username in users and \
             check_password_hash(users.get(username), password):
         return username
+
+# ring buffer for images
 
 image_pos = 0
 image_buffer_size = 10
@@ -46,8 +48,7 @@ last_image = 0
 
 Bootstrap(app)
 
-def to_lookup(ll):
-    return [ {'name':x} for x in ll]
+
 
 def take_picture():
     "take picture and store in ring buffer"
@@ -60,10 +61,13 @@ def take_picture():
     return frame,last_image
 
 def threaded_task():
-    "take and store picture in background"
+    "take and store picture as background task"
     frame,last_image = take_picture()
     sm.store_action(frame)
 
+def to_lookup(ll):
+    " create drop down lookups"
+    return [ {'name':x} for x in ll]
 
 @app.route('/')
 @auth.login_required
@@ -77,7 +81,6 @@ def index():
         isoList=isoList,
         resolutionList=resolutionList,
         jpegqualityList=jpegqualityList)
-
 
 @app.route("/api/v1/resources/takesend")
 #@auth.login_required

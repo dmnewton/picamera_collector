@@ -1,5 +1,4 @@
 setuptools
-matplotlib
 numpy
 gpiozero
 picamera

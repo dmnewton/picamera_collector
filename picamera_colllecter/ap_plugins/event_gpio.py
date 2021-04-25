@@ -33,7 +33,7 @@ class TriggerEvent(object):
         logger.info('release')
         if self.state == 1:
             myResponse = requests.get(self.url,auth=self.auth)
-            logger.info("photo resp %s", myResponse)
+            logger.info("photo resp %s", myResponse.text)
             self.state = 0
         time.sleep(1)
 
