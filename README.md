@@ -9,6 +9,8 @@ This tool supports three important steps
 ## Instructions
 
 Install lite  raspios image using etcher <br>
+https://www.balena.io/etcher/
+
 2021-03-04-raspios-buster-armhf-lite.zip
 
 mount on pc/mac <br>
@@ -65,7 +67,17 @@ sudo systemctl start camera.service
 sudo systemctl status camera.service
 ```
 
-## Sendig to google cloud storage
+## access
+
+http://localhost:5000
+
+userid password are defined in the yaml
+
+# plugins
+
+One definable triger and storage function
+
+## Sending to google cloud storage
 
 edit app_settings.yaml
 
