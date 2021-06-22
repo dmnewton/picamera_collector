@@ -25,8 +25,7 @@ def prepare_action():
 
 def release_action():
     global state
-    print('release')
-    if state == 2:
+    if state == 1:
         print('release')
         start=time.time()
         execute_ws()
@@ -44,11 +43,11 @@ if __name__ == '__main__':
 
     signal_pin = int(config_data.get('gpio_pin'))
 
-    button = Button(17)
+    button = Button(signal_pin)
 
     button.when_activated = prepare_action
     button.when_deactivated = release_action
 
-    execute_ws()
+    #execute_ws()
 
-    #pause()
+    pause()
