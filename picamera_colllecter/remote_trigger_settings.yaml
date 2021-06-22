@@ -1,0 +1,4 @@
+user: admin
+password: admin
+url: http://picamera:5000/api/v1/resources/takesend
+gpio_pin: 4

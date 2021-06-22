@@ -1,0 +1,14 @@
+[Unit]
+Description=PI calls web service on GPIO event
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 remote_trigger.py
+WorkingDirectory=/home/pi/.local/lib/python3.7/site-packages/picamera_colllecter
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target

@@ -83,7 +83,7 @@ def index():
         jpegqualityList=jpegqualityList)
 
 @app.route("/api/v1/resources/takesend")
-#@auth.login_required
+@auth.login_required
 def takesend():
     thread = Thread(target=threaded_task, args=())
     thread.daemon = True
