@@ -1,6 +1,6 @@
 import io
 import importlib
-from threading import Thread
+import time
 
 from flask import (Flask, Response,  render_template, send_file, request ,jsonify)
 
@@ -14,11 +14,9 @@ from camerapi import Camera
 from config import Configuration
 cf = Configuration()
 
-event_module = cf.config_data['plugins']['event']
-store_module = cf.config_data['plugins']['store']
+plugins = cf.config_data['plugins']
 
-ev = importlib.import_module(event_module)
-sm = importlib.import_module(store_module)
+plugins_modules = [importlib.import_module(p) for p in plugins]
 
 import logging
 logging.basicConfig(level=logging.INFO) 
@@ -48,6 +46,14 @@ last_image = 0
 
 Bootstrap(app)
 
+def take_video():
+    stream = io.BytesIO()
+    global camera
+    camera.resolution = (640, 480)
+    camera.start_recording(stream,format='h264')
+    camera.wait_recording(10)
+    camera.stop_recording()
+    return stream.getbuffer()
 
 
 def take_picture():
@@ -60,10 +66,10 @@ def take_picture():
     image_pos = image_pos % image_buffer_size
     return frame,last_image
 
-def threaded_task():
-    "take and store picture as background task"
-    frame,last_image = take_picture()
-    sm.store_action(frame)
+# def threaded_task():
+#     "take and store picture as background task"
+#     frame,last_image = take_picture()
+#     sm.store_action(frame)
 
 def to_lookup(ll):
     " create drop down lookups"
@@ -82,13 +88,31 @@ def index():
         resolutionList=resolutionList,
         jpegqualityList=jpegqualityList)
 
+def sleep_gen(period):
+    """use generator to create an accurate time intervals to send frames"""
+    num = 0
+    start_time = time.time()
+    while True:
+       sleeplength =  start_time + ( period * num ) - time.time()
+       sleeplength = max(sleeplength,0)
+       yield sleeplength
+       num += 1
+
 @app.route("/api/v1/resources/takesend")
 @auth.login_required
 def takesend():
-    thread = Thread(target=threaded_task, args=())
-    thread.daemon = True
-    thread.start()
-    return jsonify({'thread_name': str(thread.name),
+    #thread = Thread(target=threaded_task, args=())
+    #thread.daemon = True
+    #thread.start()
+    #    return jsonify({'thread_name': str(thread.name),
+    #                'started': True})
+    sleeplength = sleep_gen(camera.cf['delay'])
+    for i in range(camera.cf['numberimages']):
+        time.sleep(next(sleeplength))
+        frame,last_image = take_picture()
+        if bsm:
+            bsm.add_job((time.time(),frame))
+    return jsonify({'thread_name': str(last_image),
                     'started': True})
 
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
@@ -102,14 +126,6 @@ def api_start():
     camera.change_mode_if_required(ddlMode,ddlISO,ddlResolution,ddlJPEG)
     frame,last_image = take_picture()
     return(str(last_image))
-
-@app.route('/api/v1/resources/send_to_gcs/<int:pid>', methods=['GET'])
-@auth.login_required
-def image_to_gcs(pid):
-    global image_buffer
-    frame=image_buffer[pid]
-    rr = sm.store_action(frame)
-    return(rr)
 
 @app.route('/images/<int:pid>', methods=['GET'])
 def image_frombuff(pid):
@@ -141,6 +157,13 @@ def video_feed():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    #app.run('0.0.0.0',threaded=True)
-    bb =ev.TriggerEvent(cf)
+
+    plugins_instances = [p.PluginModule() for p in plugins_modules]
+
+    bsm = None
+    for p  in plugins_instances:
+        p.activate(app)
+        if hasattr(p, "add_job"):
+            bsm = p
+
     app.run('::', threaded=True, debug=False)

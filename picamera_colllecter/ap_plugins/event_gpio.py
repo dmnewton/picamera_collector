@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 base_url = "http://{}:5000/api/v1/resources/takesend"
 
-class TriggerEvent(object):
+class PluginModule(object):
     "this can be use locally as plugin or run on remote device to trigger picture"
 
     def __init__(self,cf):
@@ -36,6 +36,9 @@ class TriggerEvent(object):
             logger.info("photo resp %s", myResponse.text)
             self.state = 0
         time.sleep(1)
+    
+    def activate(self,app):
+        return
 
 if __name__ == '__main__':
     "use on a remote pi to trigger camera"
@@ -44,7 +47,7 @@ if __name__ == '__main__':
 
     logger.info("starting")
 
-    bb = TriggerEvent(cf)
+    bb = PluginModule(cf)
     bb.remote_url(cf.config_data['camerahost'])
 
     pause()

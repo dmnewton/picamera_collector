@@ -1,3 +1,4 @@
+import sys
 from gpiozero import Button
 from time import sleep
 from signal import pause
@@ -48,6 +49,9 @@ if __name__ == '__main__':
     button.when_activated = prepare_action
     button.when_deactivated = release_action
 
-    #execute_ws()
+    if len(sys.argv) > 0:
+        if sys.argv[1] == 'test':
+            execute_ws()
+            exit()
 
     pause()

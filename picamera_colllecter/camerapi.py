@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from config import Configuration
-cf = Configuration().config_data['initial_settings']
+
 
 class Frame:
     def __init__(self):
@@ -38,10 +38,11 @@ class Camera(object):
         self.reset_message = threading.Condition()
         self.camera = picamera.PiCamera()
         self.state  = -1
-        self.iso = cf['iso']
-        self.mode = cf['mode']
-        self.resolution = cf['resolution']
-        self.jpegquality = cf['jpegquality']
+        self.cf = Configuration().config_data['initial_settings']
+        self.iso = self.cf['iso']
+        self.mode = self.cf['mode']
+        self.resolution = self.cf['resolution']
+        self.jpegquality = self.cf['jpegquality']
     
     @staticmethod
     def to_res(s):

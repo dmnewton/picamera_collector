@@ -6,8 +6,8 @@ flask:
   secret: supersecret
 # plugins to trigger than a picture is take and store the resulting picture
 plugins:
-  event: ap_plugins.event_dummy
-  store: ap_plugins.store_to_gcs
+- ap_plugins.store_to_gcs
+- ap_plugins.light_control
 # if the triger is on a remote host where is the camaera
 camerahost: picameradev
 # configuretion for google cloud storage plugin
@@ -21,6 +21,8 @@ initial_settings:
  mode: auto
  iso: 0
  jpegquality : 85
+ numberimages : 10
+ delay : 1
 # possible resolutions (standards)
 resolution:
 - 640x480
