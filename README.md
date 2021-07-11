@@ -49,18 +49,34 @@ sudo raspi-config<br>
 *  gpu 128<br>
 *  change password fo pi
 
-## Install python and pip
 
+## prepare environmnet with latest software
 ```shell
 sudo apt update
+sudo apt full-upgrade
+```
+
+## Install python , pip and git
+
+```shell
 sudo apt install python3 git python3-pip
 ```
+
+## update pip packages
+
+```shell
+pip3 list --outdated
+```
+
 ## install software as pip module
 ```shell
 pip3 install git+https://github.com/dmnewton/picamera_colllecter.git
 ```
 
 ## start as service
+
+Chose camera.service or trigger.service
+
 ```shell
 cd /home/pi/.local/lib/python3.7/site-packages/picamera_colllecter
 sudo cp camera.service /etc/systemd/system/
