@@ -46,7 +46,7 @@ class PluginModule(object):
         
 
     def activate(self,app):
-        app.add_url_rule('/api/v1/resources/lighton', view_func=self.set_turn_on_time_service)
+        app.add_url_rule('/api/v1/resources/lighston', view_func=self.set_turn_on_time_service)
 
 
 if __name__ == '__main__':

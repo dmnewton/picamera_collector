@@ -1,6 +1,8 @@
 gpio_pin: 17
-#host: picamera01
-host: "[::1]"
-base_url: "http://{}:5000/api/v1/resources/takesend"
+host: picamera01.local
+#host: "[::1]"
+base_url: "http://{}:5000/api/v1/resources/{}"
+takephoto: "takesend"
+lighston: "lighston"
 user: admin
 password: admin

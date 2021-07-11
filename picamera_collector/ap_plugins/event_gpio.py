@@ -26,10 +26,13 @@ class PluginModule(object):
         self.button.when_deactivated = self.prepare_action
         self.button.when_activated = self.release_action
         self.state = 0
-        self.url = self.config_data['base_url'].format('[::1]')
+        self.url_take = self.config_data['base_url'].format(self.config_data['host'],self.config_data['takephoto'])
+        self.url_lights = self.config_data['base_url'].format(self.config_data['host'],self.config_data['lighston'])
 
     def prepare_action(self):
         logger.info("prepared")
+        myResponse = requests.get(self.url_lights,auth=self.auth)
+        logger.info("lighting resp %s", myResponse.text)
         self.state = 1
         time.sleep(1)
 
@@ -37,7 +40,7 @@ class PluginModule(object):
     def release_action(self):
         logger.info('release')
         if self.state == 1:
-            myResponse = requests.get(self.url,auth=self.auth)
+            myResponse = requests.get(self.url_take,auth=self.auth)
             logger.info("photo resp %s", myResponse.text)
             self.state = 0
         time.sleep(1)
