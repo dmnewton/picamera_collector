@@ -23,8 +23,12 @@ class PluginModule(object):
         self.auth=(self.config_data['user'],self.config_data['password'])
         signal_pin = int(self.config_data.get('gpio_pin'))
         self.button = Button(signal_pin)
-        self.button.when_deactivated = self.prepare_action
-        self.button.when_activated = self.release_action
+        #self.button.when_deactivated = self.prepare_action
+        #self.button.when_activated = self.release_action
+
+        self.button.when_activated = self.prepare_action
+        self.button.when_deactivated = self.release_action
+
         self.state = 0
         self.url_take = self.config_data['base_url'].format(self.config_data['host'],self.config_data['takephoto'])
         self.url_lights = self.config_data['base_url'].format(self.config_data['host'],self.config_data['lighston'])
