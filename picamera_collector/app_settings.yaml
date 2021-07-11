@@ -1,4 +1,4 @@
-# protect web server
+# simply protect the web server
 users:
     admin: admin
 # secret for flask state store
@@ -10,19 +10,14 @@ plugins:
 - ap_plugins.light_control
 # if the triger is on a remote host where is the camaera
 camerahost: picameradev
-# configuretion for google cloud storage plugin
-gcs:
-  authfile: /home/pi/gdiaunicorn-a4464e10106e.json
-  bucket: roof_images
-  directory: test
 # initial setting for camera on boot 
 initial_settings:
  resolution: 1920x1080
  mode: auto
  iso: 0
  jpegquality : 85
- numberimages : 10
- delay : 1
+ numberimages : 2
+ delay : 2
 # possible resolutions (standards)
 resolution:
 - 640x480
@@ -31,7 +26,7 @@ resolution:
 - 1640x1232
 - 1920x1080
 - 3280x2464
-# standard cmaera modes
+# standard camera modes
 modeList:
 - auto
 - sports

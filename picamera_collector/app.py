@@ -6,7 +6,7 @@ from flask import (Flask, Response,  render_template, send_file, request ,jsonif
 
 from flask_bootstrap import Bootstrap
 from flask_httpauth import HTTPBasicAuth
-from werkzeug.datastructures import cache_property
+#from werkzeug.datastructures import cache_property
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from camerapi import Camera

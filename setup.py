@@ -8,10 +8,10 @@ if os.path.isfile(requirementPath):
     with open(requirementPath) as f:
         install_requires = f.read().splitlines()
 
-setup(name='picamera_colllecter',
+setup(name='picamera_collector',
       version='0.0.1',
       description='AI data Collection using PI Camera',
-      url='https://github.com/dmnewton/picamera_colllecter.git',
+      url='https://github.com/dmnewton/picamera_collector.git',
       author='david newton',
       author_email='dmndmn@hotmail.de',
       license='mit',
