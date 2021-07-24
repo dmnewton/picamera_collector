@@ -25,12 +25,16 @@ class PluginModule(object):
         self.thread_queue = Queue()
         self.run()
 
-    def store_action(self,phototime,image):
+    def store_action(self,phototime,image,file_suffix):
         epoch_time = int(phototime*1000)
-        destination_blob_name = "{}/image-{}.{}".format(self.config_data['directory'],epoch_time,'jpg')
+        if file_suffix == 'jpg':
+            content_type='image/jpeg'
+        else:
+            content_type='video/mp4'
+        destination_blob_name = "{}/image-{}.{}".format(self.config_data['directory'],epoch_time,file_suffix)
 
         blob = self.bucket.blob(destination_blob_name)
-        content_type='image/jpeg'
+
         rr = blob.upload_from_string(image,content_type=content_type)
         logger.info(
             "File uploaded to {} ".format(
@@ -41,8 +45,8 @@ class PluginModule(object):
 
     def worker(self):
         while True:
-            phototime,image = self.thread_queue.get()
-            self.store_action(phototime,image)
+            phototime,image,content_type = self.thread_queue.get()
+            self.store_action(phototime,image,content_type)
             self.thread_queue.task_done()
     
     def run(self):

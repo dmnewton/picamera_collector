@@ -14,4 +14,16 @@ class Configuration(object):
             path =pathlib.Path(__file__).parent
             with open(path / 'app_settings.yaml') as file:
                 cls.config_data = yaml.load(file, Loader=yaml.FullLoader)
+            with open(path / 'app_current.yaml') as file:
+                cls.current_config = yaml.load(file, Loader=yaml.FullLoader)
         return cls._instance
+
+
+    def save_current(cls,camera_args):
+        cls.current_config['iso']=int(camera_args.get('ddlISO'))
+        cls.current_config['mode']=camera_args.get('ddlMode')
+        cls.current_config['resolution']=camera_args.get('ddlResolution')
+        cls.current_config['jpegquality']=int(camera_args.get('ddlJPEG'))
+        path =pathlib.Path(__file__).parent
+        with open(path / 'app_current.yaml',"w") as file:
+            yaml.dump(cls.current_config, file)

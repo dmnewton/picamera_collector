@@ -38,7 +38,7 @@ class Camera(object):
         self.reset_message = threading.Condition()
         self.camera = picamera.PiCamera()
         self.state  = -1
-        self.cf = Configuration().config_data['initial_settings']
+        self.cf = Configuration().current_config
         self.iso = self.cf['iso']
         self.mode = self.cf['mode']
         self.resolution = self.cf['resolution']
@@ -59,7 +59,10 @@ class Camera(object):
             self.camera.start_recording(output, format='mjpeg',quality=self.jpegquality)
             self.state = 1
 
-    def change_mode_if_required(self,ddlMode,ddlISO,ddlResolution,ddlJPEG):
+    def save_camera_config(self,camera_args):
+        Configuration().save_current(camera_args)
+
+    def change_mode_if_required(self,camera_args):
 
         no_change = True
         if self.state == 1:
@@ -67,15 +70,17 @@ class Camera(object):
             self.state = 0
             no_change = False
         
-        if ddlMode != None:
-            ddlISO=int(ddlISO)
-            if (self.mode != ddlMode) or (self.iso != ddlISO) or (self.resolution != ddlResolution) :
-                self.mode = ddlMode
+        if camera_args.get('ddlMode') != None:
+            ddlISO=int(camera_args.get('ddlISO'))
+            if ((self.mode != camera_args.get('ddlMode')) or 
+                (self.iso != ddlISO) or
+                (self.resolution != camera_args.get('ddlResolution'))) :
+                self.mode = camera_args.get('ddlMode')
                 self.iso = ddlISO
-                self.resolution = ddlResolution
+                self.resolution = camera_args.get('ddlResolution')
                 no_change = False
-            if self.jpegquality != int(ddlJPEG):
-                self.jpegquality = int(ddlJPEG)
+            if self.jpegquality != int(camera_args.get('ddlJPEG')):
+                self.jpegquality = int(camera_args.get('ddlJPEG'))
         if self.state == -1:
             self.state = 0
             no_change = False
@@ -98,6 +103,14 @@ class Camera(object):
         stream = io.BytesIO()
         self.camera.capture(stream, format='jpeg',quality=self.jpegquality)
         logger.info("shutter speed %d", self.camera.exposure_speed)
+        return stream.getvalue()
+
+    def take_video(self,duration):
+        stream = io.BytesIO()
+        #self.camera.resolution = (640, 480)
+        self.camera.start_recording(stream,format='h264')
+        self.camera.wait_recording(duration)
+        self.camera.stop_recording()
         return stream.getvalue()
     
     def stop_camera(self):
