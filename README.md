@@ -24,12 +24,22 @@ touch /Volumes/boot/ssh
 
 enable device access via USB so you can configure WLAN etc.<br>
 or you can connect keyboard and screen<br>
+turbo and voltage are required for system stability when camera is attacehd to a zero<br>
 
 edit /Volumes/boot/config.txt<br>
+```shell
+[pi0]
+gpu_mem=128
+start_x=1
 dtoverlay=dwc2
+force_turbo=1
+over_voltage=4
+```
 
 edit /Volumes/boot/cmdline.txt after rootwait <br>
+```shell
 modules-load=dwc2,g_ether
+```
 
 Now you can connect via usb<br>
 
@@ -49,18 +59,37 @@ sudo raspi-config<br>
 *  gpu 128<br>
 *  change password fo pi
 
-## Install python and pip
 
+## prepare environmnet with latest software
 ```shell
 sudo apt update
+sudo apt full-upgrade
+```
+
+## Install python , pip and git
+```shell
 sudo apt install python3 git python3-pip
 ```
-## install software as pip module
+
+## update pip packages
+does not work!
 ```shell
-pip3 install git+https://github.com/dmnewton/picamera_colllecter.git
+pip3 freeze > requirements.txt
+sed -i 's/==/>=/g' requirements.txt 
+pip3 install -r requirements.txt --upgrade
+```
+
+## install software as pip module or clone
+```shell
+pip3 install git+https://github.com/dmnewton/picamera_collector.git
+or
+git clone https://github.com/dmnewton/picamera_collector.git
 ```
 
 ## start as service
+
+Chose camera.service or trigger.service
+
 ```shell
 cd /home/pi/.local/lib/python3.7/site-packages/picamera_colllecter
 sudo cp camera.service /etc/systemd/system/

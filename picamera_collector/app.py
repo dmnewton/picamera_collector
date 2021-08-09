@@ -46,14 +46,6 @@ last_image = 0
 
 Bootstrap(app)
 
-def take_video():
-    stream = io.BytesIO()
-    global camera
-    camera.resolution = (640, 480)
-    camera.start_recording(stream,format='h264')
-    camera.wait_recording(10)
-    camera.stop_recording()
-    return stream.getbuffer()
 
 
 def take_picture():
@@ -66,11 +58,6 @@ def take_picture():
     image_pos = image_pos % image_buffer_size
     return frame,last_image
 
-# def threaded_task():
-#     "take and store picture as background task"
-#     frame,last_image = take_picture()
-#     sm.store_action(frame)
-
 def to_lookup(ll):
     " create drop down lookups"
     return [ {'name':x} for x in ll]
@@ -78,11 +65,13 @@ def to_lookup(ll):
 @app.route('/')
 @auth.login_required
 def index():
+    methodList=to_lookup(cf.config_data['methodList'])
     modeList=to_lookup(cf.config_data['modeList'])
     isoList=to_lookup(cf.config_data['isoList'])
     resolutionList=to_lookup(cf.config_data['resolution'])
     jpegqualityList=to_lookup(cf.config_data['jpegquality'])
     return render_template('index.html',
+        methodList=methodList,
         modeList=modeList,
         isoList=isoList,
         resolutionList=resolutionList,
@@ -98,32 +87,51 @@ def sleep_gen(period):
        yield sleeplength
        num += 1
 
+@app.route("/api/v1/resources/takevideo")
+@auth.login_required
+def takevideo():
+    video_buffer=camera.take_video(10)
+    if bsm:
+        bsm.add_job((time.time(),video_buffer,'h264'))
+    return jsonify({'status': 'OK'})
+
 @app.route("/api/v1/resources/takesend")
 @auth.login_required
 def takesend():
-    #thread = Thread(target=threaded_task, args=())
-    #thread.daemon = True
-    #thread.start()
-    #    return jsonify({'thread_name': str(thread.name),
-    #                'started': True})
     sleeplength = sleep_gen(camera.cf['delay'])
     for i in range(camera.cf['numberimages']):
         time.sleep(next(sleeplength))
         frame,last_image = take_picture()
         if bsm:
-            bsm.add_job((time.time(),frame))
-    return jsonify({'thread_name': str(last_image),
-                    'started': True})
+            bsm.add_job((time.time(),frame,'jpg'))
+    return jsonify({'image index': str(last_image)})
+
+@app.route('/api/v1/resources/saveconfig', methods=['GET'])
+@auth.login_required
+def api_saveconfig():
+    camera_args = request.args.to_dict()
+    #ddlMethod = request.args.get('ddlMethod')
+    #ddlMode = request.args.get('ddlMode')
+    #ddlISO =  request.args.get('ddlISO')
+    #ddlResolution =  request.args.get('ddlResolution')
+    #ddlJPEG = request.args.get('ddlJPEG')
+    global camera
+    camera.change_mode_if_required(camera_args)
+
+    camera.save_camera_config(camera_args)
+    return("config saved")
+
 
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
 @auth.login_required
 def api_start():
-    ddlMode = request.args.get('ddlMode')
-    ddlISO =  request.args.get('ddlISO')
-    ddlResolution =  request.args.get('ddlResolution')
-    ddlJPEG = request.args.get('ddlJPEG')
+    camera_args = request.args.to_dict()
+    #ddlMode = request.args.get('ddlMode')
+    #ddlISO =  request.args.get('ddlISO')
+    #ddlResolution =  request.args.get('ddlResolution')
+    #ddlJPEG = request.args.get('ddlJPEG')
     global camera
-    camera.change_mode_if_required(ddlMode,ddlISO,ddlResolution,ddlJPEG)
+    camera.change_mode_if_required(camera_args)
     frame,last_image = take_picture()
     return(str(last_image))
 

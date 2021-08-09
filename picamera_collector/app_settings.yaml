@@ -10,14 +10,6 @@ plugins:
 - ap_plugins.light_control
 # if the triger is on a remote host where is the camaera
 camerahost: picameradev
-# initial setting for camera on boot 
-initial_settings:
- resolution: 1920x1080
- mode: auto
- iso: 0
- jpegquality : 85
- numberimages : 2
- delay : 2
 # possible resolutions (standards)
 resolution:
 - 640x480
@@ -44,3 +36,6 @@ jpegquality:
 - 90
 - 95
 - 100
+methodList:
+- picture
+- video

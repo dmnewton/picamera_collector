@@ -17,9 +17,13 @@ class PluginModule(object):
         with open(path / 'light_control.yaml') as file:
             self.config_data = yaml.load(file, Loader=yaml.FullLoader)
         
-        self.relay = DigitalOutputDevice(int(self.config_data['gpio']),active_high=True)
+        self.relay = DigitalOutputDevice(int(self.config_data['gpio_pin']),active_high=True)
         
         self.turn_off_time = time.time()
+
+        self.check_sleep_time = int(self.config_data['checktime'])
+
+        self.waittime = int(self.config_data['waittime'])
 
         self.run()
     
@@ -30,7 +34,7 @@ class PluginModule(object):
             if (self.turn_off_time <= current_time) & self.relay.is_active:
                 logger.info('turn off')
                 self.relay.off()
-            time.sleep(1)
+            time.sleep(self.check_sleep_time)
     
     def run(self):
         threading.Thread(target=self.worker, daemon=True).start()
@@ -38,7 +42,7 @@ class PluginModule(object):
     def set_turn_on_time(self):
         logger.info('turn on')
         self.relay.on()
-        self.turn_off_time = time.time() + int(self.config_data['waittime'])
+        self.turn_off_time = time.time() + self.waittime
 
     def set_turn_on_time_service(self):
         self.set_turn_on_time()
