@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 ExecStart=/usr/bin/python3 event_gpio.py
-WorkingDirectory=/home/pi/.local/lib/python3.7/site-packages/picamera_collecter/ap_plugins
+WorkingDirectory=/home/pi/picamera_collector/picamera_collector/ap_plugins
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
