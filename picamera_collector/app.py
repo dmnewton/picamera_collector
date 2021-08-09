@@ -46,8 +46,6 @@ last_image = 0
 
 Bootstrap(app)
 
-
-
 def take_picture():
     "take picture and store in ring buffer"
     global camera,image_buffer_size,image_buffer,image_pos,last_image
@@ -87,17 +85,14 @@ def sleep_gen(period):
        yield sleeplength
        num += 1
 
-@app.route("/api/v1/resources/takevideo")
-@auth.login_required
+
 def takevideo():
     video_buffer=camera.take_video(10)
     if bsm:
         bsm.add_job((time.time(),video_buffer,'h264'))
     return jsonify({'status': 'OK'})
 
-@app.route("/api/v1/resources/takesend")
-@auth.login_required
-def takesend():
+def takepicture():
     sleeplength = sleep_gen(camera.cf['delay'])
     for i in range(camera.cf['numberimages']):
         time.sleep(next(sleeplength))
@@ -105,6 +100,15 @@ def takesend():
         if bsm:
             bsm.add_job((time.time(),frame,'jpg'))
     return jsonify({'image index': str(last_image)})
+
+@app.route("/api/v1/resources/takesend")
+@auth.login_required
+def takesend():
+    if camera.method == 'picture':
+        return takepicture()
+    else:
+        return takevideo()
+    
 
 @app.route('/api/v1/resources/saveconfig', methods=['GET'])
 @auth.login_required

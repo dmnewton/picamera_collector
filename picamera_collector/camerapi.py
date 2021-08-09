@@ -43,6 +43,7 @@ class Camera(object):
         self.mode = self.cf['mode']
         self.resolution = self.cf['resolution']
         self.jpegquality = self.cf['jpegquality']
+        self.method = self.cf['method']
     
     @staticmethod
     def to_res(s):
@@ -74,11 +75,14 @@ class Camera(object):
             ddlISO=int(camera_args.get('ddlISO'))
             if ((self.mode != camera_args.get('ddlMode')) or 
                 (self.iso != ddlISO) or
-                (self.resolution != camera_args.get('ddlResolution'))) :
-                self.mode = camera_args.get('ddlMode')
-                self.iso = ddlISO
-                self.resolution = camera_args.get('ddlResolution')
-                no_change = False
+                (self.resolution != camera_args.get('ddlResolution')) or
+                (self.method != camera_args.get('ddlMethod'))
+                ) :
+                    self.mode = camera_args.get('ddlMode')
+                    self.iso = ddlISO
+                    self.resolution = camera_args.get('ddlResolution')
+                    self.method = camera_args.get('ddlMethod')
+                    no_change = False
             if self.jpegquality != int(camera_args.get('ddlJPEG')):
                 self.jpegquality = int(camera_args.get('ddlJPEG'))
         if self.state == -1:
