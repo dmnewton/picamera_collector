@@ -25,6 +25,8 @@ class PluginModule(object):
 
         self.waittime = int(self.config_data['waittime'])
 
+        self.set_turn_on_time()
+
         self.run()
     
     def worker(self):

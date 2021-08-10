@@ -6,6 +6,7 @@ from flask import (Flask, Response,  render_template, send_file, request ,jsonif
 
 from flask_bootstrap import Bootstrap
 from flask_httpauth import HTTPBasicAuth
+
 #from werkzeug.datastructures import cache_property
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -18,12 +19,12 @@ plugins = cf.config_data['plugins']
 
 plugins_modules = [importlib.import_module(p) for p in plugins]
 
-import logging
-logging.basicConfig(level=logging.INFO) 
 
 camera = Camera()
 
 app = Flask(__name__)
+
+
 app.config['SECRET_KEY'] = cf.config_data['flask']['secret']
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
@@ -49,7 +50,10 @@ Bootstrap(app)
 def take_picture():
     "take picture and store in ring buffer"
     global camera,image_buffer_size,image_buffer,image_pos,last_image
+    t1 = round(time.time() * 1000)
     image_buffer[image_pos]=camera.take_still_picture()
+    t2 = round(time.time() * 1000)
+    app.logger.info('one photo elapsed %d',t2 - t1)
     frame=image_buffer[image_pos]
     last_image = image_pos
     image_pos += 1
@@ -92,11 +96,17 @@ def takevideo():
         bsm.add_job((time.time(),video_buffer,'h264'))
     return jsonify({'status': 'OK'})
 
-def takepicture():
+def takepicture(ts):
     sleeplength = sleep_gen(camera.cf['delay'])
     for i in range(camera.cf['numberimages']):
-        time.sleep(next(sleeplength))
+        sp = next(sleeplength)
+        time.sleep(sp)
+        app.logger.info('sleep  2 %f', sp)
+        ts_server = round(time.time() * 1000)
+        app.logger.info('time delay 2 %d',ts_server-ts)
         frame,last_image = take_picture()
+        ts_pic = round(time.time() * 1000)
+        app.logger.info('time delay 3 %d',ts_pic-ts_server)
         if bsm:
             bsm.add_job((time.time(),frame,'jpg'))
     return jsonify({'image index': str(last_image)})
@@ -104,8 +114,13 @@ def takepicture():
 @app.route("/api/v1/resources/takesend")
 @auth.login_required
 def takesend():
+    ts_sensor = int(request.args.get('ts'))
+    ts_server = round(time.time() * 1000)
+    app.logger.info('time delay 1 %d',ts_server-ts_sensor)
+
+
     if camera.method == 'picture':
-        return takepicture()
+        return takepicture(ts_server)
     else:
         return takevideo()
     
@@ -178,4 +193,5 @@ if __name__ == '__main__':
         if hasattr(p, "add_job"):
             bsm = p
 
-    app.run('::', threaded=True, debug=False)
+
+    app.run('::', threaded=True, debug=False,use_reloader=False)
