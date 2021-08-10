@@ -118,7 +118,6 @@ def takesend():
     ts_server = round(time.time() * 1000)
     app.logger.info('time delay 1 %d',ts_server-ts_sensor)
 
-
     if camera.method == 'picture':
         return takepicture(ts_server)
     else:
@@ -194,4 +193,4 @@ if __name__ == '__main__':
             bsm = p
 
 
-    app.run('::', threaded=True, debug=False,use_reloader=False)
+    app.run('0.0.0.0', threaded=True, debug=False, use_reloader=False)
