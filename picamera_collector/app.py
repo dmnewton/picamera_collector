@@ -10,6 +10,8 @@ from flask_httpauth import HTTPBasicAuth
 #from werkzeug.datastructures import cache_property
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from werkzeug.serving import WSGIRequestHandler
+
 from camerapi import Camera
 
 from config import Configuration
@@ -116,7 +118,7 @@ def takepicture(ts):
 def takesend():
     ts_sensor = int(request.args.get('ts'))
     ts_server = round(time.time() * 1000)
-    app.logger.info('time delay 1 %d',ts_server-ts_sensor)
+    app.logger.info('time delay 1 %d',ts_server - ts_sensor)
 
     if camera.method == 'picture':
         return takepicture(ts_server)
@@ -192,5 +194,6 @@ if __name__ == '__main__':
         if hasattr(p, "add_job"):
             bsm = p
 
-
+    WSGIRequestHandler.protocol_version = "HTTP/1.1"
+    
     app.run('0.0.0.0', threaded=True, debug=False, use_reloader=False)
