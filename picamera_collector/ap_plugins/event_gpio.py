@@ -9,8 +9,6 @@ import logging
 logging.basicConfig(level=logging.INFO) 
 logger = logging.getLogger(__name__)
 
-
-
 class PluginModule(object):
     "this can be use locally as plugin or run on remote device to trigger picture"
 
@@ -44,7 +42,10 @@ class PluginModule(object):
     def release_action(self):
         logger.info('release')
         if self.state == 1:
-            myResponse = requests.get(self.url_take,auth=self.auth)
+            ts = round(time.time() * 1000)
+            url = self.url_take + '?ts=' + str(ts)
+            logger.info("url %s",url)
+            myResponse = requests.get(url,auth=self.auth)
             logger.info("photo resp %s", myResponse.text)
             self.state = 0
         time.sleep(1)
