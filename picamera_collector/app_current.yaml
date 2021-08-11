@@ -1,5 +1,6 @@
 framerate: 5
 numberimages: 10
+vflip: True
 iso: 400
 jpegquality: 85
 method: picture

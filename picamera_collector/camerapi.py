@@ -44,6 +44,8 @@ class Camera(object):
         self.resolution = self.cf['resolution']
         self.jpegquality = self.cf['jpegquality']
         self.method = self.cf['method']
+        if self.cf['vflip']:
+            logger.info("vertical flip enabled")
         self.set_camera()
     
     def set_camera(self):
@@ -51,6 +53,7 @@ class Camera(object):
         self.camera.iso = self.iso
         self.camera.meter_mode = 'spot'
         self.camera.exposure_mode = self.mode
+        self.camera.vflip = self.cf['vflip']
     
     @staticmethod
     def to_res(s):
