@@ -99,19 +99,21 @@ def takevideo():
     return jsonify({'status': 'OK'})
 
 def takepicture(ts):
-    sleeplength = sleep_gen(camera.cf['delay'])
-    for i in range(camera.cf['numberimages']):
-        sp = next(sleeplength)
-        time.sleep(sp)
-        app.logger.info('sleep  2 %f', sp)
-        ts_server = round(time.time() * 1000)
-        app.logger.info('time delay 2 %d',ts_server-ts)
+    global camera
+    epoch_time = int(time.time()*1000)
+    if camera.cf['numberimages']==1:
+        app.logger.info('taking sngle pictue')
         frame,last_image = take_picture()
-        ts_pic = round(time.time() * 1000)
-        app.logger.info('time delay 3 %d',ts_pic-ts_server)
         if bsm:
-            bsm.add_job((time.time(),frame,'jpg'))
-    return jsonify({'image index': str(last_image)})
+            bsm.add_job((epoch_time,0,frame,'jpg'))
+        return jsonify({'image index': str(last_image)})
+    else:
+        app.logger.info('taking series of pictures')
+        ts = time.time()
+        images = camera.take_picture_series()
+        if bsm:
+           [bsm.add_job((epoch_time,x,images[x],'jpg')) for x in range(len(images))]
+        return jsonify({'series taken of ' : len(images)})
 
 @app.route("/api/v1/resources/takesend")
 #@auth.login_required

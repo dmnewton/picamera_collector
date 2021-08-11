@@ -25,13 +25,13 @@ class PluginModule(object):
         self.thread_queue = Queue()
         self.run()
 
-    def store_action(self,phototime,image,file_suffix):
-        epoch_time = int(phototime*1000)
+    def store_action(self,epoch_time,sequence,image,file_suffix):
+        series = '{:02d}'.format(sequence)
         if file_suffix == 'jpg':
             content_type='image/jpeg'
         else:
             content_type='video/mp4'
-        destination_blob_name = "{}/image-{}.{}".format(self.config_data['directory'],epoch_time,file_suffix)
+        destination_blob_name = "{}/image-{}-{}.{}".format(self.config_data['directory'],epoch_time,series,file_suffix)
 
         blob = self.bucket.blob(destination_blob_name)
 
@@ -45,8 +45,8 @@ class PluginModule(object):
 
     def worker(self):
         while True:
-            phototime,image,content_type = self.thread_queue.get()
-            self.store_action(phototime,image,content_type)
+            epoch_time,sequence,image,file_suffix = self.thread_queue.get()
+            self.store_action(epoch_time,sequence,image,file_suffix)
             self.thread_queue.task_done()
     
     def run(self):
@@ -61,5 +61,6 @@ class PluginModule(object):
 if __name__ == '__main__':
     bs = PluginModule()
     time.sleep(1)
-    bs.add_job((time.time(),"abc"))
+    epoch_time = int(time.time()*1000)
+    bs.add_job((epoch_time,0,"abc"))
     time.sleep(10)

@@ -44,6 +44,13 @@ class Camera(object):
         self.resolution = self.cf['resolution']
         self.jpegquality = self.cf['jpegquality']
         self.method = self.cf['method']
+        self.set_camera()
+    
+    def set_camera(self):
+        self.camera.resolution=self.to_res(self.resolution)
+        self.camera.iso = self.iso
+        self.camera.meter_mode = 'spot'
+        self.camera.exposure_mode = self.mode
     
     @staticmethod
     def to_res(s):
@@ -92,10 +99,8 @@ class Camera(object):
         if no_change:
             return
     
-        self.camera.resolution=self.to_res(self.resolution)
-        self.camera.iso = self.iso
-        self.camera.meter_mode = 'spot'
-        self.camera.exposure_mode = self.mode
+        self.set_camera()
+        
         time.sleep(2)
     
     def get_frame(self):
@@ -108,6 +113,18 @@ class Camera(object):
         self.camera.capture(stream, format='jpeg',quality=self.jpegquality)
         logger.info("shutter speed %d", self.camera.exposure_speed)
         return stream.getvalue()
+
+    def take_picture_series(self):
+        self.camera.framerate = int(self.cf.get('framerate'))
+        frames = int(self.cf.get('numberimages'))
+        outputs = [io.BytesIO() for i in range(frames)]
+        start = time.time()
+        self.camera.capture_sequence(outputs, 'jpeg', use_video_port=True)
+        finish = time.time()
+        logger.info('Captured at %.2f fps', (frames / (finish - start)))
+        logger.info("shutter speed %d", self.camera.exposure_speed)
+        res = [x.getvalue()for x in outputs]
+        return res
 
     def take_video(self,duration):
         stream = io.BytesIO()
