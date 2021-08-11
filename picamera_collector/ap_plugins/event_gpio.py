@@ -6,7 +6,8 @@ import yaml
 import pathlib
 
 import logging
-logging.basicConfig(level=logging.INFO) 
+logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class PluginModule(object):
@@ -31,9 +32,12 @@ class PluginModule(object):
         self.url_take = self.config_data['base_url'].format(self.config_data['host'],self.config_data['takephoto'])
         self.url_lights = self.config_data['base_url'].format(self.config_data['host'],self.config_data['lighston'])
 
+        self.sess = requests.Session()
+        self.sess.verify = True
+
     def prepare_action(self):
         logger.info("prepared")
-        myResponse = requests.get(self.url_lights,auth=self.auth)
+        myResponse = self.sess.get(self.url_lights,auth=self.auth)
         logger.info("lighting resp %s", myResponse.text)
         self.state = 1
         time.sleep(1)
@@ -45,7 +49,8 @@ class PluginModule(object):
             ts = round(time.time() * 1000)
             url = self.url_take + '?ts=' + str(ts)
             logger.info("url %s",url)
-            myResponse = requests.get(url,auth=self.auth)
+            myResponse = self.sess.get(url)
+            #myResponse = self.sess.get(url,auth=self.auth)
             logger.info("photo resp %s", myResponse.text)
             self.state = 0
         time.sleep(1)

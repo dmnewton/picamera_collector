@@ -114,7 +114,7 @@ def takepicture(ts):
     return jsonify({'image index': str(last_image)})
 
 @app.route("/api/v1/resources/takesend")
-@auth.login_required
+#@auth.login_required
 def takesend():
     ts_sensor = int(request.args.get('ts'))
     ts_server = round(time.time() * 1000)
