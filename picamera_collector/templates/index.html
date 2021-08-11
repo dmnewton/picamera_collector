@@ -9,6 +9,8 @@
 
 <script>
 
+  var im = 0
+
   function get_pic_args() {
     var m = document.getElementById("ddlMethod");
     var e = document.getElementById("ddlMode");
@@ -66,7 +68,7 @@
       $("#status").text("showing new image")
       $("#container").attr("src", 'images/' + data);
       $("#webservice_return").text(data)
-
+      im = parseInt(data)
     });
   }
 
@@ -75,7 +77,20 @@
       $("#status").text("showing last picture")
       $("#container").attr("src", 'images/' + data);
       $("#webservice_return").text(data)
+      im = parseInt(data)
     });
+  }
+  
+  function previous_picture() {
+      im = im - 1
+      $("#container").attr("src", 'images/' + im);
+      $("#webservice_return").text(im)
+  }
+
+  function next_picture() {
+      im = im + 1
+      $("#container").attr("src", 'images/' + im);
+      $("#webservice_return").text(im)
   }
 
 
@@ -100,6 +115,10 @@
         <tr><button style="width:100%;background-color: #4CAF50;" onclick="toggleVideo()">Show Live Stream</button></tr>
         <tr> <button style="width:100%;background-color: #4CAF50;" onclick="take_picture()">Take Event</button></tr>
         <tr><button style="width:100%;background-color: #4CAF50;" onclick="show_last_picture()">Show Last</button></tr>
+        <tr>
+          <button style="width:50%;background-color: #4CAF50;" onclick="previous_picture()">Previous</button>
+          <button style="width:50%;background-color: #4CAF50;" onclick="next_picture()">Next</button>
+        </tr>
         <tr><button style="width:100%;background-color: #4CAF50;" onclick="saveConfig()">Save Config</button></tr>
         <tr>
           <td>Action Status</td>

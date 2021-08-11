@@ -118,9 +118,20 @@ class Camera(object):
         self.camera.framerate = int(self.cf.get('framerate'))
         frames = int(self.cf.get('numberimages'))
         outputs = [io.BytesIO() for i in range(frames)]
+        # fix camera exposure
+        self.camera.shutter_speed = self.camera.exposure_speed
+        ex_mode = self.camera.exposure_mode 
+        self.camera.exposure_mode = 'off'
+        g = self.camera.awb_gains
+        awb = self.camera.awb_mode 
+        self.camera.awb_mode = 'off'
+        self.camera.awb_gains = g
         start = time.time()
         self.camera.capture_sequence(outputs, 'jpeg', use_video_port=True)
         finish = time.time()
+        # switch off
+        self.camera.exposure_mode = ex_mode
+        self.camera.awb_mode = awb
         logger.info('Captured at %.2f fps', (frames / (finish - start)))
         logger.info("shutter speed %d", self.camera.exposure_speed)
         res = [x.getvalue()for x in outputs]

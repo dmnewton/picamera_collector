@@ -21,7 +21,6 @@ plugins = cf.config_data['plugins']
 
 plugins_modules = [importlib.import_module(p) for p in plugins]
 
-
 camera = Camera()
 
 app = Flask(__name__)
@@ -43,24 +42,29 @@ def verify_password(username, password):
 # ring buffer for images
 
 image_pos = 0
-image_buffer_size = 10
+image_buffer_size = 20
 image_buffer = [ None for i in range(image_buffer_size)]
 last_image = 0
 
 Bootstrap(app)
 
+def add_picture_to_buffer(image):
+    global image_buffer_size,image_buffer,image_pos,last_image
+    image_buffer[image_pos]=image
+    last_image = image_pos
+    image_pos += 1
+    image_pos = image_pos % image_buffer_size
+    return last_image
+
 def take_picture():
     "take picture and store in ring buffer"
     global camera,image_buffer_size,image_buffer,image_pos,last_image
     t1 = round(time.time() * 1000)
-    image_buffer[image_pos]=camera.take_still_picture()
+    image=camera.take_still_picture()
     t2 = round(time.time() * 1000)
     app.logger.info('one photo elapsed %d',t2 - t1)
-    frame=image_buffer[image_pos]
-    last_image = image_pos
-    image_pos += 1
-    image_pos = image_pos % image_buffer_size
-    return frame,last_image
+    last_image=add_picture_to_buffer(image)
+    return image,last_image
 
 def to_lookup(ll):
     " create drop down lookups"
@@ -113,6 +117,8 @@ def takepicture(ts):
         images = camera.take_picture_series()
         if bsm:
            [bsm.add_job((epoch_time,x,images[x],'jpg')) for x in range(len(images))]
+        for image in images:
+            add_picture_to_buffer(image)
         return jsonify({'series taken of ' : len(images)})
 
 @app.route("/api/v1/resources/takesend")
