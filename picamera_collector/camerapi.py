@@ -56,7 +56,7 @@ class Camera(object):
         self.camera.meter_mode = 'spot'
         self.camera.exposure_mode = self.mode
         self.camera.vflip = self.cf['vflip']
-        self.camera.vflip = self.cf['hflip']
+        self.camera.hflip = self.cf['hflip']
     
     @staticmethod
     def to_res(s):
