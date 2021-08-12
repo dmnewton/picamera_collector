@@ -126,9 +126,10 @@
         </tr>
         <tr>
           <td style="width: 50%">Method</td>
-          <td style="width: 50%"><SELECT name="method" id="ddlMethod">
+          <td style="width: 50%">
+            <SELECT name="method" id="ddlMethod" >
               {% for c in methodList %}
-              <OPTION value={{c.name}}>{{c.name}}</option>
+              <OPTION value={{c.name}} {% if c.name == cMethod %} selected {% endif %} >{{c.name}} </option>
               {% endfor %}
             </SELECT></td>
         </tr>
@@ -136,7 +137,7 @@
           <td style="width: 50%">Resolution</td>
           <td style="width: 50%"><SELECT name="resolution" id="ddlResolution">
               {% for c in resolutionList %}
-              <OPTION value={{c.name}}>{{c.name}}</option>
+              <OPTION value={{c.name}} {% if c.name == cResolution %} selected {% endif %} >{{c.name}}</option>
               {% endfor %}
             </SELECT></td>
         </tr>
@@ -144,7 +145,7 @@
           <td>Mode</td>
           <td><SELECT name="mode" id="ddlMode">
               {% for c in modeList %}
-              <OPTION value={{c.name}}>{{c.name}}</option>
+              <OPTION value={{c.name}} {% if c.name == cMode %} selected {% endif %} >{{c.name}}</option>
               {% endfor %}
             </SELECT></td>
         </tr>
@@ -152,7 +153,7 @@
           <td>ISO</td>
           <td><SELECT name="iso" id="ddlISO">
               {% for c in isoList %}
-              <OPTION value={{c.name}}>{{c.name}}</option>
+              <OPTION value={{c.name}} {% if c.name == cISO %} selected {% endif %} >{{c.name}}</option>
               {% endfor %}
             </SELECT></td>
         </tr>
@@ -160,7 +161,7 @@
           <td>JPEG Quality</td>
           <td><SELECT name="jpeg" id="ddlJPEG">
               {% for c in jpegqualityList %}
-              <OPTION value={{c.name}}>{{c.name}}</option>
+              <OPTION value={{c.name}} {% if c.name == cJPEG %} selected {% endif %} >{{c.name}}</option>
               {% endfor %}
             </SELECT></td>
         </tr>

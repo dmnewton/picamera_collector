@@ -73,6 +73,7 @@ def to_lookup(ll):
 @app.route('/')
 @auth.login_required
 def index():
+    global camera
     methodList=to_lookup(cf.config_data['methodList'])
     modeList=to_lookup(cf.config_data['modeList'])
     isoList=to_lookup(cf.config_data['isoList'])
@@ -83,7 +84,13 @@ def index():
         modeList=modeList,
         isoList=isoList,
         resolutionList=resolutionList,
-        jpegqualityList=jpegqualityList)
+        jpegqualityList=jpegqualityList,
+        cMethod=camera.method,
+        cResolution=camera.resolution,
+        cMode=camera.mode,
+        cISO=camera.iso,
+        cJPEG=camera.jpegquality
+        )
 
 def sleep_gen(period):
     """use generator to create an accurate time intervals to send frames"""
@@ -99,53 +106,48 @@ def sleep_gen(period):
 def takevideo():
     video_buffer=camera.take_video(10)
     if bsm:
-        bsm.add_job((time.time(),video_buffer,'h264'))
-    return jsonify({'status': 'OK'})
+        bsm.add_job((time.time(),0,video_buffer,'h264'))
+    return 0
 
-def takepicture(ts):
+def takepicture(single_picture):
     global camera
     epoch_time = int(time.time()*1000)
-    if camera.cf['numberimages']==1:
+    if (camera.cf['numberimages']==1) or single_picture:
         app.logger.info('taking sngle pictue')
         frame,last_image = take_picture()
         if bsm:
             bsm.add_job((epoch_time,0,frame,'jpg'))
-        return jsonify({'image index': str(last_image)})
+        return last_image
     else:
         app.logger.info('taking series of pictures')
-        ts = time.time()
         images = camera.take_picture_series()
         if bsm:
            [bsm.add_job((epoch_time,x,images[x],'jpg')) for x in range(len(images))]
         for image in images:
-            add_picture_to_buffer(image)
-        return jsonify({'series taken of ' : len(images)})
+            last_image = add_picture_to_buffer(image)
+        return last_image
 
 @app.route("/api/v1/resources/takesend")
 #@auth.login_required
 def takesend():
+    global camera
     ts_sensor = int(request.args.get('ts'))
     ts_server = round(time.time() * 1000)
     app.logger.info('time delay 1 %d',ts_server - ts_sensor)
-
+    app.logger.info('camera method %s',camera.method)
     if camera.method == 'picture':
-        return takepicture(ts_server)
+        last =  takepicture(single_picture=False)
     else:
-        return takevideo()
+        last = takevideo()
+    return jsonify({'image index': str(last)})
     
 
 @app.route('/api/v1/resources/saveconfig', methods=['GET'])
 @auth.login_required
 def api_saveconfig():
-    camera_args = request.args.to_dict()
-    #ddlMethod = request.args.get('ddlMethod')
-    #ddlMode = request.args.get('ddlMode')
-    #ddlISO =  request.args.get('ddlISO')
-    #ddlResolution =  request.args.get('ddlResolution')
-    #ddlJPEG = request.args.get('ddlJPEG')
     global camera
+    camera_args = request.args.to_dict()
     camera.change_mode_if_required(camera_args)
-
     camera.save_camera_config(camera_args)
     return("config saved")
 
@@ -154,14 +156,16 @@ def api_saveconfig():
 @auth.login_required
 def api_start():
     camera_args = request.args.to_dict()
-    #ddlMode = request.args.get('ddlMode')
-    #ddlISO =  request.args.get('ddlISO')
-    #ddlResolution =  request.args.get('ddlResolution')
-    #ddlJPEG = request.args.get('ddlJPEG')
     global camera
     camera.change_mode_if_required(camera_args)
-    frame,last_image = take_picture()
-    return(str(last_image))
+    if camera.method == 'picture':
+        last=takepicture(single_picture=True)
+    else:
+        last=takevideo()
+    return(str(last))
+
+    #frame,last_image = take_picture()
+    #return(str(last_image))
 
 @app.route('/images/<int:pid>', methods=['GET'])
 def image_frombuff(pid):
