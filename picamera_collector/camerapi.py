@@ -46,6 +46,8 @@ class Camera(object):
         self.method = self.cf['method']
         if self.cf['vflip']:
             logger.info("vertical flip enabled")
+        if self.cf['hflip']:
+            logger.info("horizontal flip enabled")
         self.set_camera()
     
     def set_camera(self):
@@ -54,6 +56,7 @@ class Camera(object):
         self.camera.meter_mode = 'spot'
         self.camera.exposure_mode = self.mode
         self.camera.vflip = self.cf['vflip']
+        self.camera.vflip = self.cf['hflip']
     
     @staticmethod
     def to_res(s):

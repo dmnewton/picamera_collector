@@ -1,7 +1,8 @@
 framerate: 5
 numberimages: 10
 vflip: True
-iso: 400
+hflip: True
+iso: 200
 jpegquality: 85
 method: picture
 mode: auto
