@@ -19,7 +19,7 @@ class PluginModule(object):
         with open(path / 'event_gpio.yaml') as file:
             self.config_data = yaml.load(file, Loader=yaml.FullLoader)
 
-        self.auth=(self.config_data['user'],self.config_data['password'])
+        # self.auth=(self.config_data['user'],self.config_data['password'])
         signal_pin = int(self.config_data.get('gpio_pin'))
         self.button = Button(signal_pin)
         #self.button.when_deactivated = self.prepare_action
@@ -37,7 +37,8 @@ class PluginModule(object):
 
     def prepare_action(self):
         logger.info("prepared")
-        myResponse = self.sess.get(self.url_lights,auth=self.auth)
+        myResponse = self.sess.get(self.url_lights)
+        #myResponse = self.sess.get(self.url_lights,auth=self.auth)
         logger.info("lighting resp %s", myResponse.text)
         self.state = 1
         time.sleep(1)
