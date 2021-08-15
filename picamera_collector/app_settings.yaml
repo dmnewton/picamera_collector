@@ -6,8 +6,9 @@ flask:
   secret: supersecret
 # plugins to trigger than a picture is take and store the resulting picture
 plugins:
-- ap_plugins.store_to_gcs
-- ap_plugins.light_control
+- picamera_collector.ap_plugins.store_to_gcs
+- picamera_collector.ap_plugins.light_control
+- picamera_collector.ap_plugins.event_gpio
 # if the triger is on a remote host where is the camaera
 camerahost: picameradev
 # possible resolutions (standards)

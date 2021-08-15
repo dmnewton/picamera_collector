@@ -7,28 +7,30 @@ from flask import (Flask, Response,  render_template, send_file, request ,jsonif
 from flask_bootstrap import Bootstrap
 from flask_httpauth import HTTPBasicAuth
 
+from flask_socketio import SocketIO
+
 #from werkzeug.datastructures import cache_property
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from werkzeug.serving import WSGIRequestHandler
+#from werkzeug.serving import WSGIRequestHandler
 
-from camerapi import Camera
+from picamera_collector import camerapi
 
-from config import Configuration
-cf = Configuration()
+from picamera_collector import config
+cf = config.Configuration()
 
 plugins = cf.config_data['plugins']
 
 plugins_modules = [importlib.import_module(p) for p in plugins]
 
-camera = Camera()
+camera = camerapi.Camera()
 
 app = Flask(__name__)
-
 
 app.config['SECRET_KEY'] = cf.config_data['flask']['secret']
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
+sio = SocketIO(app)
 
 # simple security
 auth = HTTPBasicAuth()
@@ -140,6 +142,17 @@ def takesend():
     else:
         last = takevideo()
     return jsonify({'image index': str(last)})
+
+@sio.event
+def takephoto(ts_sensor):
+    global camera
+    ts_server = round(time.time() * 1000)
+    app.logger.info('time delay 1 %d',ts_server - ts_sensor)
+    app.logger.info('camera method %s',camera.method)
+    if camera.method == 'picture':
+        last =  takepicture(single_picture=False)
+    else:
+        last = takevideo()
     
 
 @app.route('/api/v1/resources/saveconfig', methods=['GET'])
@@ -195,6 +208,17 @@ def video_feed():
     camera.start_camera()
     return Response(gen(camera),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+                    
+
+@sio.event
+def connect(sid):
+    app.logger.info('connect %s', sid)
+
+@sio.event
+def disconnect():
+    app.logger.info('disconnect ') 
+
+
 
 if __name__ == '__main__':
 
@@ -206,6 +230,9 @@ if __name__ == '__main__':
         if hasattr(p, "add_job"):
             bsm = p
 
-    WSGIRequestHandler.protocol_version = "HTTP/1.1"
+    #WSGIRequestHandler.protocol_version = "HTTP/1.1"
+    #app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app)    
+    #app.run('0.0.0.0', threaded=True, debug=False, use_reloader=False)
+
+    sio.run(app, host='0.0.0.0', port=5000, use_reloader=False)
     
-    app.run('0.0.0.0', threaded=True, debug=False, use_reloader=False)

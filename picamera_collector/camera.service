@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 ExecStart=/usr/bin/python3 app.py
-WorkingDirectory=/home/pi/.local/lib/python3.7/site-packages/picamera_colllecter
+WorkingDirectory=/home/pi/picamera_collector/picamera_collector
 StandardOutput=inherit
 StandardError=inherit
 Restart=always

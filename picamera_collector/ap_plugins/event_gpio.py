@@ -4,6 +4,8 @@ from signal import pause
 import requests
 import yaml
 import pathlib
+import socketio
+
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -33,9 +35,15 @@ class PluginModule(object):
         self.url_lights = self.config_data['base_url'].format(self.config_data['host'],self.config_data['lighston'])
 
         self.sess = requests.Session()
-        self.sess.verify = True
+        #self.sess.verify = True
+
+        self.sio = socketio.Client()
+        self.connection_string = "http://{}:5000".format(self.config_data['host'])
+        
 
     def prepare_action(self):
+        if self.sio.sid == None:
+            self.sio.connect(self.connection_string)
         logger.info("prepared")
         myResponse = self.sess.get(self.url_lights)
         #myResponse = self.sess.get(self.url_lights,auth=self.auth)
@@ -45,14 +53,17 @@ class PluginModule(object):
 
 
     def release_action(self):
+        if self.sio.sid == None:
+            self.sio.connect(self.connection_string)
         logger.info('release')
         if self.state == 1:
             ts = round(time.time() * 1000)
-            url = self.url_take + '?ts=' + str(ts)
-            logger.info("url %s",url)
-            myResponse = self.sess.get(url)
+            #url = self.url_take + '?ts=' + str(ts)
+            #logger.info("url %s",url)
+            self.sio.emit('takephoto',ts)
+            #myResponse = self.sess.get(url)
             #myResponse = self.sess.get(url,auth=self.auth)
-            logger.info("photo resp %s", myResponse.text)
+            #logger.info("photo resp %s", myResponse.text)
             self.state = 0
         time.sleep(1)
     

@@ -2,6 +2,7 @@ import os
 import time
 import yaml
 import pathlib
+import datetime
 
 from queue import Queue
 import threading 
@@ -31,7 +32,8 @@ class PluginModule(object):
             content_type='image/jpeg'
         else:
             content_type='video/mp4'
-        destination_blob_name = "{}/image-{}-{}.{}".format(self.config_data['directory'],epoch_time,series,file_suffix)
+        dt = datetime.datetime.fromtimestamp(epoch_time/1000).strftime('%Y-%m-%d')
+        destination_blob_name = "{}/{}/image-{}-{}.{}".format(self.config_data['directory'],dt,epoch_time,series,file_suffix)
 
         blob = self.bucket.blob(destination_blob_name)
 
