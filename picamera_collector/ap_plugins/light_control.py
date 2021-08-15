@@ -1,7 +1,8 @@
 import logging
 import yaml
 import time
-import threading
+#import threading
+import eventlet
 from gpiozero import DigitalOutputDevice
 import pathlib
 
@@ -32,14 +33,17 @@ class PluginModule(object):
     def worker(self):
         while True:
             current_time = time.time()
-            #logger.info('time %s %s %s',self.turn_off_time,current_time,self.relay)
+            logger.info('time %s %s %s',self.turn_off_time,current_time,self.relay)
             if (self.turn_off_time <= current_time) & self.relay.is_active:
                 logger.info('turn off')
                 self.relay.off()
-            time.sleep(self.check_sleep_time)
+            eventlet.sleep(self.check_sleep_time)
     
     def run(self):
-        threading.Thread(target=self.worker, daemon=True).start()
+        logger.info('run')
+        eventlet.spawn(self.worker)
+        eventlet.sleep(0)
+        #threading.Thread(target=self.worker, daemon=True).start()
 
     def set_turn_on_time(self):
         logger.info('turn on')
@@ -57,6 +61,6 @@ class PluginModule(object):
 
 if __name__ == '__main__':
     bs = PluginModule()
-    time.sleep(3)
+    eventlet.sleep(3)
     bs.set_turn_on_time()
-    time.sleep(20)
+    eventlet.sleep(20)

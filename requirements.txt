@@ -8,6 +8,7 @@ RPi.GPIO
 flask
 flask_bootstrap
 flask_httpauth
+flask_socketio
 eventlet
 websocket-client
 simple-websocket

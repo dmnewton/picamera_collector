@@ -6,7 +6,8 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
-from config import Configuration
+from picamera_collector import config
+
 
 
 class Frame:
@@ -38,7 +39,7 @@ class Camera(object):
         self.reset_message = threading.Condition()
         self.camera = picamera.PiCamera()
         self.state  = -1
-        self.cf = Configuration().current_config
+        self.cf = config.Configuration().current_config
         self.iso = self.cf['iso']
         self.mode = self.cf['mode']
         self.resolution = self.cf['resolution']
@@ -74,7 +75,7 @@ class Camera(object):
             self.state = 1
 
     def save_camera_config(self,camera_args):
-        Configuration().save_current(camera_args)
+        config.Configuration().save_current(camera_args)
 
     def change_mode_if_required(self,camera_args):
 
