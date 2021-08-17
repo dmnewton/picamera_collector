@@ -6,11 +6,12 @@ import yaml
 import pathlib
 import socketio
 
+import eventlet
 
 import logging
-logging.basicConfig(level=logging.INFO)
-#logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(format=FORMAT,level=logging.INFO)
 
 class PluginModule(object):
     "this can be use locally as plugin or run on remote device to trigger picture"
@@ -49,7 +50,7 @@ class PluginModule(object):
         #myResponse = self.sess.get(self.url_lights,auth=self.auth)
         logger.info("lighting resp %s", myResponse.text)
         self.state = 1
-        time.sleep(1)
+        eventlet.sleep(1)
 
 
     def release_action(self):
@@ -65,7 +66,7 @@ class PluginModule(object):
             #myResponse = self.sess.get(url,auth=self.auth)
             #logger.info("photo resp %s", myResponse.text)
             self.state = 0
-        time.sleep(1)
+        eventlet.sleep(1)
     
     def activate(self,app):
         return

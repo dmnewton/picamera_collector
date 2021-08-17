@@ -9,8 +9,11 @@ from flask_httpauth import HTTPBasicAuth
 
 from flask_socketio import SocketIO
 
-#from werkzeug.datastructures import cache_property
 from werkzeug.security import check_password_hash, generate_password_hash
+
+import logging
+FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(format=FORMAT,level=logging.INFO)
 
 #from werkzeug.serving import WSGIRequestHandler
 
@@ -89,20 +92,10 @@ def index():
         jpegqualityList=jpegqualityList,
         cMethod=camera.method,
         cResolution=camera.resolution,
-        cMode=camera.mode,
+        cMode=camera.exposure_mode,
         cISO=camera.iso,
         cJPEG=camera.jpegquality
         )
-
-def sleep_gen(period):
-    """use generator to create an accurate time intervals to send frames"""
-    num = 0
-    start_time = time.time()
-    while True:
-       sleeplength =  start_time + ( period * num ) - time.time()
-       sleeplength = max(sleeplength,0)
-       yield sleeplength
-       num += 1
 
 
 def takevideo():
@@ -123,10 +116,10 @@ def takepicture(single_picture):
     else:
         app.logger.info('taking series of pictures')
         images = camera.take_picture_series()
-        if bsm:
-           [bsm.add_job((epoch_time,x,images[x],'jpg')) for x in range(len(images))]
         for image in images:
             last_image = add_picture_to_buffer(image)
+        if bsm:
+           [bsm.add_job((epoch_time,x,images[x],'jpg')) for x in range(len(images))]
         return last_image
 
 @app.route("/api/v1/resources/takesend")
@@ -168,8 +161,9 @@ def api_saveconfig():
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
 @auth.login_required
 def api_start():
-    camera_args = request.args.to_dict()
+    app.logger.info('takepicture')
     global camera
+    camera_args = request.args.to_dict()
     camera.change_mode_if_required(camera_args)
     if camera.method == 'picture':
         last=takepicture(single_picture=True)
@@ -195,20 +189,14 @@ def api_lastpicturea():
     global last_image
     return(str(last_image))
 
-def gen(camera):
-    while True:
-        frame = camera.get_frame()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 @app.route('/video_feed')
 @auth.login_required
 def video_feed():
     global camera
-    camera.start_camera()
-    return Response(gen(camera),
+    app.logger.info('video_feed')
+    return Response(camerapi.Camera.gen(camera),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
-                    
 
 @sio.event
 def connect(sid):
@@ -217,8 +205,6 @@ def connect(sid):
 @sio.event
 def disconnect():
     app.logger.info('disconnect ') 
-
-
 
 if __name__ == '__main__':
 
@@ -231,8 +217,7 @@ if __name__ == '__main__':
             bsm = p
 
     #WSGIRequestHandler.protocol_version = "HTTP/1.1"
-    #app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app)    
+    
     #app.run('0.0.0.0', threaded=True, debug=False, use_reloader=False)
-
-    sio.run(app, host='0.0.0.0', port=5000, use_reloader=False)
+    sio.run(app, host='0.0.0.0', port=5000,  debug=False, use_reloader=False)
     

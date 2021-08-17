@@ -2,12 +2,15 @@ import logging
 import yaml
 import time
 #import threading
-import eventlet
 from gpiozero import DigitalOutputDevice
 import pathlib
 
-logging.basicConfig(level=logging.INFO) 
+import eventlet
+
+import logging
 logger = logging.getLogger(__name__)
+FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(format=FORMAT,level=logging.INFO)
 
 class PluginModule(object):
     def __init__(self):

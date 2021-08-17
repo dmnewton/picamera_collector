@@ -4,14 +4,17 @@ import yaml
 import pathlib
 import datetime
 
-from queue import Queue
-import threading 
+import eventlet
+
+#from queue import Queue
+#import threading 
 
 from google.cloud import storage
 
 import logging
-logging.basicConfig(level=logging.INFO) 
 logger = logging.getLogger(__name__)
+FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(format=FORMAT,level=logging.INFO)
 
 class PluginModule(object):
     def __init__(self):
@@ -23,7 +26,7 @@ class PluginModule(object):
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = self.config_data['authfile']
         self.storage_client = storage.Client()
         self.bucket = self.storage_client.bucket(self.config_data['bucket'])
-        self.thread_queue = Queue()
+        self.thread_queue = eventlet.Queue()
         self.run()
 
     def store_action(self,epoch_time,sequence,image,file_suffix):
@@ -52,7 +55,8 @@ class PluginModule(object):
             self.thread_queue.task_done()
     
     def run(self):
-        threading.Thread(target=self.worker, daemon=True).start()
+        eventlet.spawn(self.worker)
+        eventlet.sleep(0)
 
     def add_job(self,job):
         self.thread_queue.put(job)
@@ -62,7 +66,7 @@ class PluginModule(object):
 
 if __name__ == '__main__':
     bs = PluginModule()
-    time.sleep(1)
+    eventlet.sleep(1)
     epoch_time = int(time.time()*1000)
     bs.add_job((epoch_time,0,"abc"))
-    time.sleep(10)
+    eventlet.sleep(10)
