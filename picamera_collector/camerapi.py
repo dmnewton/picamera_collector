@@ -138,8 +138,8 @@ class Camera(object):
             return
   
         self.set_camera()
-        
-        eventlet.sleep(2)    
+        eventlet.sleep(2)   
+
     def take_still_picture(self):
         stream = io.BytesIO()
         self.camera.capture(stream, format='jpeg',quality=self.jpegquality)
@@ -154,9 +154,7 @@ class Camera(object):
            
         self.camera.shutter_speed = self.cf.get('shutter_speed')
         self.camera.iso = 0
-
-        eventlet.sleep(0.1)
-
+        
         start = time.time()
         self.camera.capture_sequence(outputs, 'jpeg', use_video_port=True)
         finish = time.time()

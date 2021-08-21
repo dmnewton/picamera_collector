@@ -10,6 +10,7 @@
 <script>
 
   var im = 0
+  var end = 0
 
   function get_pic_args() {
     var m = document.getElementById("ddlMethod");
@@ -66,29 +67,35 @@
     $.get("/api/v1/resources/takepicture", get_pic_args(), function (data) {
       // when picture in buffer load
       $("#status").text("showing new image")
-      $("#container").attr("src", 'images/' + data);
-      $("#webservice_return").text(data)
-      im = parseInt(data)
+      im=data[0]
+      end=data[1]
+      $("#container").attr("src", 'images/' + im);
+      $("#webservice_return").text(im)
     });
   }
 
   function show_last_picture() {
     $.get("/api/v1/resources/lastpicture", function (data) {
       $("#status").text("showing last picture")
-      $("#container").attr("src", 'images/' + data);
-      $("#webservice_return").text(data)
-      im = parseInt(data)
+      im=data[0]
+      end=data[1]
+      $("#container").attr("src", 'images/' + im);
+      $("#webservice_return").text(im)
     });
   }
   
   function previous_picture() {
+      $("#status").text("showing previous picture")
       im = im - 1
+      if (im < 0) {im = end}
       $("#container").attr("src", 'images/' + im);
       $("#webservice_return").text(im)
   }
 
   function next_picture() {
+      $("#status").text("showing next picture")
       im = im + 1
+      if (im > end) {im = 0}
       $("#container").attr("src", 'images/' + im);
       $("#webservice_return").text(im)
   }

@@ -18,6 +18,8 @@ logging.basicConfig(format=FORMAT,level=logging.INFO)
 #from werkzeug.serving import WSGIRequestHandler
 
 from picamera_collector import camerapi
+from picamera_collector import ring_buffer
+
 
 from picamera_collector import config
 cf = config.Configuration()
@@ -46,30 +48,18 @@ def verify_password(username, password):
 
 # ring buffer for images
 
-image_pos = 0
-image_buffer_size = 20
-image_buffer = [ None for i in range(image_buffer_size)]
-last_image = 0
+rb =ring_buffer.RingBuffer(20)
 
 Bootstrap(app)
 
-def add_picture_to_buffer(image):
-    global image_buffer_size,image_buffer,image_pos,last_image
-    image_buffer[image_pos]=image
-    last_image = image_pos
-    image_pos += 1
-    image_pos = image_pos % image_buffer_size
-    return last_image
-
 def take_picture():
     "take picture and store in ring buffer"
-    global camera,image_buffer_size,image_buffer,image_pos,last_image
+    global camera,rb
     t1 = round(time.time() * 1000)
     image=camera.take_still_picture()
     t2 = round(time.time() * 1000)
     app.logger.info('one photo elapsed %d',t2 - t1)
-    last_image=add_picture_to_buffer(image)
-    return image,last_image
+    return image
 
 def to_lookup(ll):
     " create drop down lookups"
@@ -105,22 +95,23 @@ def takevideo():
     return 0
 
 def takepicture(single_picture):
-    global camera
+    global camera,rb
     epoch_time = int(time.time()*1000)
     if (camera.cf['numberimages']==1) or single_picture:
         app.logger.info('taking sngle pictue')
-        frame,last_image = take_picture()
+        frame = take_picture()
+        rb.add_to_buffer(frame)
         if bsm:
             bsm.add_job((epoch_time,0,frame,'jpg'))
-        return last_image
+        return rb.get_state()
     else:
         app.logger.info('taking series of pictures')
         images = camera.take_picture_series()
         for image in images:
-            last_image = add_picture_to_buffer(image)
+            last_image = rb.add_to_buffer(image)
         if bsm:
            [bsm.add_job((epoch_time,x,images[x],'jpg')) for x in range(len(images))]
-        return last_image
+        return rb.get_state()
 
 @app.route("/api/v1/resources/takesend")
 #@auth.login_required
@@ -169,15 +160,15 @@ def api_start():
         last=takepicture(single_picture=True)
     else:
         last=takevideo()
-    return(str(last))
+    return jsonify(last)
 
     #frame,last_image = take_picture()
     #return(str(last_image))
 
 @app.route('/images/<int:pid>', methods=['GET'])
 def image_frombuff(pid):
-    global image_buffer
-    frame=image_buffer[pid]
+    global rb
+    frame=rb.get(pid)
     return send_file(io.BytesIO(frame),
                      attachment_filename=str(pid)+'.jpg',
                      mimetype='image/jpg',
@@ -186,8 +177,8 @@ def image_frombuff(pid):
 @app.route('/api/v1/resources/lastpicture', methods=['GET'])
 @auth.login_required
 def api_lastpicturea():
-    global last_image
-    return(str(last_image))
+    global rb
+    return jsonify(rb.get_state())
 
 
 @app.route('/video_feed')
