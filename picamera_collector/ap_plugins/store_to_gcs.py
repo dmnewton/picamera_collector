@@ -24,6 +24,7 @@ class PluginModule(object):
             self.config_data = yaml.load(file, Loader=yaml.FullLoader)
         logger.info('background store to google initiated')
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = self.config_data['authfile']
+        self.myhost = os.uname()[1]
         self.storage_client = storage.Client()
         self.bucket = self.storage_client.bucket(self.config_data['bucket'])
         self.thread_queue = eventlet.Queue()
@@ -36,7 +37,7 @@ class PluginModule(object):
         else:
             content_type='video/mp4'
         dt = datetime.datetime.fromtimestamp(epoch_time/1000).strftime('%Y-%m-%d')
-        destination_blob_name = "{}/{}/image-{}-{}.{}".format(self.config_data['directory'],dt,epoch_time,series,file_suffix)
+        destination_blob_name = "{}/{}/{}-{}-{}.{}".format(self.config_data['directory'],dt,self.myhost,epoch_time,series,file_suffix)
 
         blob = self.bucket.blob(destination_blob_name)
 

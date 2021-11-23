@@ -1,5 +1,7 @@
 gpio_pin: 4 
-host: picamera.local
+hosts:
+  - "caml1c1.local"
+  - "caml1c2.local"
 #host: "[::1]"
 base_url: "http://{}:5000/api/v1/resources/{}"
 takephoto: "takesend"
