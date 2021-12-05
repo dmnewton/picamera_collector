@@ -13,14 +13,12 @@
   var end = 0
 
   function get_pic_args() {
-    var m = document.getElementById("ddlMethod");
-    var e = document.getElementById("ddlMode");
-    var f = document.getElementById("ddlISO");
-    var g = document.getElementById("ddlResolution");
-    var h = document.getElementById("ddlJPEG");
-    var pic_args = 'ddlMode=' + e.value + '&ddlISO=' + f.value 
-      + '&ddlResolution=' + g.value + '&ddlJPEG=' + h.value
-      + '&ddlMethod=' + m.value
+    var pic_args = 'ddlMode=' + document.getElementById("ddlMode").value 
+      + '&ddlISO=' + document.getElementById("ddlISO").value 
+      + '&ddlResolution=' + document.getElementById("ddlResolution").value 
+      + '&ddlJPEG='   + document.getElementById("ddlJPEG").value
+      + '&ddlMethod=' + document.getElementById("ddlMethod").value
+      + '&ddlShutterSpeed=' + document.getElementById("ddlShutterSpeed").value
     return pic_args
   }
 
@@ -163,6 +161,11 @@
               <OPTION value={{c.name}} {% if c.name == cISO %} selected {% endif %} >{{c.name}}</option>
               {% endfor %}
             </SELECT></td>
+        </tr>
+        <tr>
+          <td>Shutter Speed ms</td>
+          <td><input type = "number" value={{cShutterSpeed}} id = "ddlShutterSpeed" min="6" max="30" />
+          </td>
         </tr>
         <tr>
           <td>JPEG Quality</td>

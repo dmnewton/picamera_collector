@@ -25,6 +25,7 @@ class Configuration(object):
         cls.current_config['resolution']=camera_args.get('ddlResolution')
         cls.current_config['jpegquality']=int(camera_args.get('ddlJPEG'))
         cls.current_config['method']=camera_args.get('ddlMethod')
+        cls.current_config['shutter_speed']=camera_args.get('ddlShutterSpeed')
         path =pathlib.Path(__file__).parent
         with open(path / 'app_current.yaml',"w") as file:
             yaml.dump(cls.current_config, file)

@@ -10,10 +10,15 @@ The trigger can come from an remote device
 
 ## Instructions
 
-Install lite  raspios image using etcher <br>
-https://www.balena.io/etcher/
+This is based on picamera which is not yet compatibel with bullseye <br>
 
-2021-03-04-raspios-buster-armhf-lite.zip
+If installing on a pi zero use lite image (also good option if not conncting PI to monitor) <br>
+
+https://downloads.raspberrypi.org/raspios_oldstable_lite_armhf/images/raspios_oldstable_lite_armhf-2021-12-02/2021-12-02-raspios-buster-armhf-lite.zip
+
+Install buster raspios image using etcher <br>
+
+https://www.balena.io/etcher/
 
 mount on pc/mac <br>
 enable ssh on boot<br>

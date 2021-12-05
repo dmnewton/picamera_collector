@@ -84,7 +84,8 @@ def index():
         cResolution=camera.resolution,
         cMode=camera.exposure_mode,
         cISO=camera.iso,
-        cJPEG=camera.jpegquality
+        cJPEG=camera.jpegquality,
+        cShutterSpeed=camera.shutter_speed
         )
 
 

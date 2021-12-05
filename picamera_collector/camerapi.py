@@ -29,6 +29,7 @@ class Camera(object):
         self.resolution = self.cf['resolution']
         self.jpegquality = self.cf['jpegquality']
         self.method = self.cf['method']
+        self.shutter_speed = self.cf['shutter_speed']
         if self.cf['vflip']:
             logger.info("vertical flip enabled")
         if self.cf['hflip']:
@@ -120,12 +121,14 @@ class Camera(object):
             if ((self.exposure_mode != camera_args.get('ddlMode')) or 
                 (self.iso != ddlISO) or
                 (self.resolution != camera_args.get('ddlResolution')) or
-                (self.method != camera_args.get('ddlMethod'))
+                (self.method != camera_args.get('ddlMethod')) or
+                (self.shutter_speed != camera_args.get('ddlShutterSpeed'))
                 ) :
                     self.exposure_mode = camera_args.get('ddlMode')
                     self.iso = ddlISO
                     self.resolution = camera_args.get('ddlResolution')
                     self.method = camera_args.get('ddlMethod')
+                    self.shutter_speed = camera_args.get('ddlShutterSpeed')
                     no_change = False
             if self.jpegquality != int(camera_args.get('ddlJPEG')):
                 self.jpegquality = int(camera_args.get('ddlJPEG'))
@@ -142,8 +145,11 @@ class Camera(object):
 
     def take_still_picture(self):
         stream = io.BytesIO()
+        self.camera.shutter_speed = int(self.shutter_speed)*1000
+        logger.info("still shutter speed %d", self.camera.shutter_speed)
         self.camera.capture(stream, format='jpeg',quality=self.jpegquality)
-        logger.info("shutter speed %d", self.camera.exposure_speed)
+        #self.camera.capture(stream, format='jpeg',quality=20)
+        logger.info("still exposure speed %d", self.camera.exposure_speed)
         return stream.getvalue()
 
     def take_picture_series(self):
@@ -151,8 +157,11 @@ class Camera(object):
         frames = int(self.cf.get('numberimages'))
         outputs = [io.BytesIO() for i in range(frames)]
         # fix camera to short exposure
+
+        self.camera.shutter_speed = int(self.shutter_speed)*1000
+
+        logger.info("series shutter speed %d", self.camera.shutter_speed)
            
-        self.camera.shutter_speed = self.cf.get('shutter_speed')
         self.camera.iso = 0
         
         start = time.time()
@@ -161,9 +170,8 @@ class Camera(object):
         
         self.print_info()
 
-        self.camera.shutter_speed = 0
         logger.info('Captured at %.2f fps', (frames / (finish - start)))
-        logger.info("shutter speed %d", self.camera.exposure_speed)
+        logger.info("series exposure speed %d", self.camera.exposure_speed)
         res = [x.getvalue()for x in outputs]
         return res
 

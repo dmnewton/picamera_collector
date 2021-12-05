@@ -33,9 +33,9 @@ isoList:
 - 1600
 # compressio quality of jpeg file
 jpegquality:
+- 20
+- 50
 - 85
-- 90
-- 95
 - 100
 methodList:
 - picture
