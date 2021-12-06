@@ -1,14 +1,13 @@
+awb_mode: auto
+exposure_mode: auto
 framerate: 5
 hflip: true
-meter_mode: average
 iso: 0
 jpegquality: 85
+meter_mode: average
 method: picture
-exposure_mode: "auto"
-awb_mode: auto
-numberimages: 10
+mode: auto
+numberimages: 2
 resolution: 1280x720
+shutter_speed: '8'
 vflip: true
-shutter_speed: 6000
-awb_gains: [1.3,1.5]
-
