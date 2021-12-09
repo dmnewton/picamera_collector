@@ -43,6 +43,9 @@ class Camera(object):
         self.camera.exposure_mode = self.exposure_mode
         self.camera.vflip = self.cf['vflip']
         self.camera.hflip = self.cf['hflip']
+        self.camera.shutter_speed = int(self.shutter_speed)*1000
+        self.camera.framerate = int(self.cf.get('framerate'))
+        #self.camera.iso = 0
     
     @staticmethod
     def to_res(s):
@@ -112,29 +115,30 @@ class Camera(object):
         if self.state == 1:
             logger.info("stop_recording")
             self.break_stop = True
-            #self.stop_camera()
+            self.stop_camera()
             self.state = 0
             no_change = False
-        
-        if camera_args.get('ddlMode') != None:
-            ddlISO=int(camera_args.get('ddlISO'))
-            if ((self.exposure_mode != camera_args.get('ddlMode')) or 
-                (self.iso != ddlISO) or
-                (self.resolution != camera_args.get('ddlResolution')) or
-                (self.method != camera_args.get('ddlMethod')) or
-                (self.shutter_speed != camera_args.get('ddlShutterSpeed'))
-                ) :
-                    self.exposure_mode = camera_args.get('ddlMode')
-                    self.iso = ddlISO
-                    self.resolution = camera_args.get('ddlResolution')
-                    self.method = camera_args.get('ddlMethod')
-                    self.shutter_speed = camera_args.get('ddlShutterSpeed')
-                    no_change = False
-            if self.jpegquality != int(camera_args.get('ddlJPEG')):
-                self.jpegquality = int(camera_args.get('ddlJPEG'))
-        if self.state == -1:
-            self.state = 0
-            no_change = False
+
+        if camera_args != None:
+            if camera_args.get('ddlMode') != None:
+                ddlISO=int(camera_args.get('ddlISO'))
+                if ((self.exposure_mode != camera_args.get('ddlMode')) or 
+                    (self.iso != ddlISO) or
+                    (self.resolution != camera_args.get('ddlResolution')) or
+                    (self.method != camera_args.get('ddlMethod')) or
+                 (self.shutter_speed != camera_args.get('ddlShutterSpeed'))
+                    ) :
+                        self.exposure_mode = camera_args.get('ddlMode')
+                        self.iso = ddlISO
+                        self.resolution = camera_args.get('ddlResolution')
+                        self.method = camera_args.get('ddlMethod')
+                        self.shutter_speed = camera_args.get('ddlShutterSpeed')
+                        no_change = False
+                if self.jpegquality != int(camera_args.get('ddlJPEG')):
+                    self.jpegquality = int(camera_args.get('ddlJPEG'))
+            if self.state == -1:
+                self.state = 0
+                no_change = False
 
 
         if no_change:
@@ -145,31 +149,25 @@ class Camera(object):
 
     def take_still_picture(self):
         stream = io.BytesIO()
-        self.camera.shutter_speed = int(self.shutter_speed)*1000
         logger.info("still shutter speed %d", self.camera.shutter_speed)
-        self.camera.capture(stream, format='jpeg',quality=self.jpegquality)
-        #self.camera.capture(stream, format='jpeg',quality=20)
+        self.camera.capture(stream, format='jpeg',quality=self.jpegquality,use_video_port=False)
         logger.info("still exposure speed %d", self.camera.exposure_speed)
         return stream.getvalue()
 
     def take_picture_series(self):
-        self.camera.framerate = int(self.cf.get('framerate'))
+
         frames = int(self.cf.get('numberimages'))
         outputs = [io.BytesIO() for i in range(frames)]
-        # fix camera to short exposure
-
-        self.camera.shutter_speed = int(self.shutter_speed)*1000
 
         logger.info("series shutter speed %d", self.camera.shutter_speed)
            
-        self.camera.iso = 0
-        
         start = time.time()
-        self.camera.capture_sequence(outputs, 'jpeg', use_video_port=True)
+        self.camera.capture_sequence(outputs, 'jpeg', use_video_port=True, quality=self.jpegquality)
         finish = time.time()
         
         self.print_info()
 
+        logger.info('Capture Elapsed %.2f',(finish - start)*1000)
         logger.info('Captured at %.2f fps', (frames / (finish - start)))
         logger.info("series exposure speed %d", self.camera.exposure_speed)
         res = [x.getvalue()for x in outputs]
@@ -177,7 +175,6 @@ class Camera(object):
 
     def take_video(self,duration):
         stream = io.BytesIO()
-        #self.camera.resolution = (640, 480)
         self.camera.start_recording(stream,format='h264')
         self.camera.wait_recording(duration)
         self.camera.stop_recording()

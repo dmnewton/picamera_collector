@@ -20,7 +20,6 @@ logging.basicConfig(format=FORMAT,level=logging.INFO)
 from picamera_collector import camerapi
 from picamera_collector import ring_buffer
 
-
 from picamera_collector import config
 cf = config.Configuration()
 
@@ -114,42 +113,6 @@ def takepicture(single_picture):
            [bsm.add_job((epoch_time,x,images[x],'jpg')) for x in range(len(images))]
         return rb.get_state()
 
-@app.route("/api/v1/resources/takesend")
-#@auth.login_required
-def takesend():
-    global camera
-    ts_sensor = int(request.args.get('ts'))
-    ts_server = round(time.time() * 1000)
-    app.logger.info('time delay 1 %d',ts_server - ts_sensor)
-    app.logger.info('camera method %s',camera.method)
-    if camera.method == 'picture':
-        last =  takepicture(single_picture=False)
-    else:
-        last = takevideo()
-    return jsonify({'image index': str(last)})
-
-@sio.event
-def takephoto(ts_sensor):
-    global camera
-    ts_server = round(time.time() * 1000)
-    app.logger.info('time delay 1 %d',ts_server - ts_sensor)
-    app.logger.info('camera method %s',camera.method)
-    if camera.method == 'picture':
-        last =  takepicture(single_picture=False)
-    else:
-        last = takevideo()
-    
-
-@app.route('/api/v1/resources/saveconfig', methods=['GET'])
-@auth.login_required
-def api_saveconfig():
-    global camera
-    camera_args = request.args.to_dict()
-    camera.change_mode_if_required(camera_args)
-    camera.save_camera_config(camera_args)
-    return("config saved")
-
-
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
 @auth.login_required
 def api_start():
@@ -165,6 +128,50 @@ def api_start():
 
     #frame,last_image = take_picture()
     #return(str(last_image))
+
+@app.route("/api/v1/resources/takesend")
+#@auth.login_required
+def takesend():
+    global camera
+    camera.change_mode_if_required(None)
+    ts_sensor = int(request.args.get('ts'))
+    ts_server = round(time.time() * 1000)
+    app.logger.info('time delay trigger to camera  %d',ts_server - ts_sensor)
+    app.logger.info('camera method %s',camera.method)
+    if camera.method == 'picture':
+        last =  takepicture(single_picture=False)
+        ts_server = round(time.time() * 1000)
+        app.logger.info('time delay trigger to end sequence %d',ts_server - ts_sensor)
+    else:
+        last = takevideo()
+    return jsonify({'image index': str(last)})
+
+@sio.event
+def takephoto(ts_sensor):
+    global camera
+    camera.change_mode_if_required(None)
+    ts_server = round(time.time() * 1000)
+    app.logger.info('time delay trigger to camera  %d',ts_server - ts_sensor)
+    app.logger.info('camera method %s',camera.method)
+    if camera.method == 'picture':
+        last =  takepicture(single_picture=False)
+        ts_server = round(time.time() * 1000)
+        app.logger.info('time delay trigger to end sequence %d',ts_server - ts_sensor)
+    else:
+        last = takevideo()
+    
+
+@app.route('/api/v1/resources/saveconfig', methods=['GET'])
+@auth.login_required
+def api_saveconfig():
+    global camera
+    camera_args = request.args.to_dict()
+    camera.change_mode_if_required(camera_args)
+    camera.save_camera_config(camera_args)
+    return("config saved")
+
+
+
 
 @app.route('/images/<int:pid>', methods=['GET'])
 def image_frombuff(pid):
