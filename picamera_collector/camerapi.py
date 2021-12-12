@@ -11,6 +11,9 @@ logging.basicConfig(format=FORMAT,level=logging.INFO)
 from picamera_collector import config
 
 class Camera(object):
+    """ manage all communication with PI camaera.
+    eventlet is use as concurrent processing framework 
+    while it works nicely with flask"""
 
     def __init__(self):
         self.thread = None
@@ -37,6 +40,7 @@ class Camera(object):
         self.set_camera()
     
     def set_camera(self):
+        """ initialise camera setting """
         self.camera.resolution=self.to_res(self.resolution)
         self.camera.iso = self.iso
         self.camera.meter_mode = self.cf['meter_mode']
@@ -45,13 +49,13 @@ class Camera(object):
         self.camera.hflip = self.cf['hflip']
         self.camera.shutter_speed = int(self.shutter_speed)*1000
         self.camera.framerate = int(self.cf.get('framerate'))
-        #self.camera.iso = 0
     
     @staticmethod
     def to_res(s):
         return [ int(x) for x in s.split('x')]
 
     def start_camera(self):
+        """ start background thread to stream video as mjpeg """
         if self.state < 1:
             self.camera.resolution = self.to_res(self.resolution)
             if self.camera.resolution[0]>3000:
@@ -64,6 +68,7 @@ class Camera(object):
             self.state = 1
     
     def frames(self):
+        """ get next frame and yield """
         stream = io.BytesIO()
         for _ in self.camera.capture_continuous(stream, 'jpeg',
                                                  use_video_port=True):
@@ -139,7 +144,6 @@ class Camera(object):
                 self.state = 0
                 no_change = False
 
-
         if no_change:
             return
   
@@ -181,6 +185,7 @@ class Camera(object):
         return stream.getvalue()
 
     def camera_info(self):
+        """copy current camera settings to dict"""
         o = [float(a) for a in self.camera.awb_gains]
         info = {
             "iso":self.camera.iso,
@@ -194,6 +199,7 @@ class Camera(object):
 
     @staticmethod
     def gen(camera):
+        """ package image in multipart/x-mixed-replace  """
         camera.start_camera()
         while True:
             frame = camera.get_frame()
@@ -202,9 +208,6 @@ class Camera(object):
 
 if __name__ == '__main__':
     camera = Camera()
-
-    camera.camera.shutter_speed = 10000 
-    camera.camera.iso = 0
 
     time.sleep(2)
 
