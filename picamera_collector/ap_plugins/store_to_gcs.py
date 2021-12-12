@@ -16,6 +16,11 @@ logger = logging.getLogger(__name__)
 FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=FORMAT,level=logging.INFO)
 
+mime_types = {'jpg':'image/jpeg',
+    'h264':'video/mp4',
+    'json': 'application/json'
+}
+
 class PluginModule(object):
     def __init__(self):
         path =pathlib.Path(__file__).parent
@@ -30,18 +35,15 @@ class PluginModule(object):
         self.thread_queue = eventlet.Queue()
         self.run()
 
-    def store_action(self,epoch_time,sequence,image,file_suffix):
+    def store_action(self,epoch_time,sequence,blob,file_suffix):
         series = '{:02d}'.format(sequence)
-        if file_suffix == 'jpg':
-            content_type='image/jpeg'
-        else:
-            content_type='video/mp4'
+        content_type = mime_types.get(file_suffix)
         dt = datetime.datetime.fromtimestamp(epoch_time/1000).strftime('%Y-%m-%d')
         destination_blob_name = "{}/{}/{}-{}-{}.{}".format(self.config_data['directory'],dt,self.myhost,epoch_time,series,file_suffix)
 
-        blob = self.bucket.blob(destination_blob_name)
+        blob_location = self.bucket.blob(destination_blob_name)
 
-        rr = blob.upload_from_string(image,content_type=content_type)
+        blob_location.upload_from_string(blob,content_type=content_type)
         logger.info(
             "File uploaded to {} ".format(
                  destination_blob_name
@@ -51,8 +53,8 @@ class PluginModule(object):
 
     def worker(self):
         while True:
-            epoch_time,sequence,image,file_suffix = self.thread_queue.get()
-            self.store_action(epoch_time,sequence,image,file_suffix)
+            epoch_time,sequence,blob,file_suffix = self.thread_queue.get()
+            self.store_action(epoch_time,sequence,blob,file_suffix)
             self.thread_queue.task_done()
     
     def run(self):

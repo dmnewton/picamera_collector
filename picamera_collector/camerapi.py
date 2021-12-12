@@ -115,7 +115,6 @@ class Camera(object):
         if self.state == 1:
             logger.info("stop_recording")
             self.break_stop = True
-            self.stop_camera()
             self.state = 0
             no_change = False
 
@@ -149,29 +148,30 @@ class Camera(object):
 
     def take_still_picture(self):
         stream = io.BytesIO()
-        logger.info("still shutter speed %d", self.camera.shutter_speed)
+        start = time.time()
         self.camera.capture(stream, format='jpeg',quality=self.jpegquality,use_video_port=False)
-        logger.info("still exposure speed %d", self.camera.exposure_speed)
-        return stream.getvalue()
+        end = time.time()
+        info = self.camera_info()
+        elapsed = end-start
+        info['elapsed'] = elapsed
+        return (stream.getvalue(),info)
 
     def take_picture_series(self):
 
         frames = int(self.cf.get('numberimages'))
         outputs = [io.BytesIO() for i in range(frames)]
 
-        logger.info("series shutter speed %d", self.camera.shutter_speed)
-           
         start = time.time()
         self.camera.capture_sequence(outputs, 'jpeg', use_video_port=True, quality=self.jpegquality)
-        finish = time.time()
+        end = time.time()
         
-        self.print_info()
-
-        logger.info('Capture Elapsed %.2f',(finish - start)*1000)
-        logger.info('Captured at %.2f fps', (frames / (finish - start)))
-        logger.info("series exposure speed %d", self.camera.exposure_speed)
-        res = [x.getvalue()for x in outputs]
-        return res
+        info = self.camera_info()
+        elapsed = end-start
+        info['elapsed'] = elapsed
+        fps =  (frames / (end - start))
+        info['fps'] = fps
+        res = [x.getvalue() for x in outputs]
+        return (res,info)
 
     def take_video(self,duration):
         stream = io.BytesIO()
@@ -179,21 +179,18 @@ class Camera(object):
         self.camera.wait_recording(duration)
         self.camera.stop_recording()
         return stream.getvalue()
-    
-    def stop_camera(self):
-        logger.info("stop_recording")
-        try:
-            self.camera.stop_recording()
-        except:
-            logger.info("tried stop not recording")
 
-    def print_info(self):
+    def camera_info(self):
         o = [float(a) for a in self.camera.awb_gains]
-        logger.info("iso %s" ,self.camera.iso)
-        logger.info("exposure speed %s" ,self.camera.exposure_speed)
-        logger.info("analog_gain %s" , self.camera.analog_gain)
-        logger.info("digital_gain %s" , self.camera.digital_gain)
-        logger.info("awb_gains %s" , o)
+        info = {
+            "iso":self.camera.iso,
+            "exposure":self.camera.exposure_speed,
+            "shutterspeed":self.camera.shutter_speed,
+            "analog_gain":self.camera.analog_gain,
+            "digital_gain":self.camera.digital_gain,
+            "awb_gains ":o
+        }
+        return info
 
     @staticmethod
     def gen(camera):
@@ -217,7 +214,7 @@ if __name__ == '__main__':
     start =time.time()
     for i in range(20):
         frame = camera.get_frame()
-        camera.print_info()
+        logger.info("inf %s", camera.camera_info())
         with open('frame.jpg', 'wb') as file_obj:
                  file_obj.write(frame)
         cnt+=1
@@ -225,4 +222,4 @@ if __name__ == '__main__':
             break
     end = time.time()
     logger.info("elapsed %s",end-start)
-    camera.stop_camera()
+    camera.break_stop = True

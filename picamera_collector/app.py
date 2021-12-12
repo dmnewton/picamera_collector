@@ -1,6 +1,8 @@
+from fractions import Fraction
 import io
 import importlib
 import time
+import json
 
 from flask import (Flask, Response,  render_template, send_file, request ,jsonify)
 
@@ -51,14 +53,6 @@ rb =ring_buffer.RingBuffer(20)
 
 Bootstrap(app)
 
-def take_picture():
-    "take picture and store in ring buffer"
-    global camera,rb
-    t1 = round(time.time() * 1000)
-    image=camera.take_still_picture()
-    t2 = round(time.time() * 1000)
-    app.logger.info('one photo elapsed %d',t2 - t1)
-    return image
 
 def to_lookup(ll):
     " create drop down lookups"
@@ -94,24 +88,31 @@ def takevideo():
         bsm.add_job((time.time(),0,video_buffer,'h264'))
     return 0
 
-def takepicture(single_picture):
+class CustomJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Fraction):
+            return str(obj)
+        return super(CustomJsonEncoder, self).default(obj)
+
+def takepicture(single_picture,ts_sensor):
     global camera,rb
     epoch_time = int(time.time()*1000)
     if (camera.cf['numberimages']==1) or single_picture:
-        app.logger.info('taking sngle pictue')
-        frame = take_picture()
-        rb.add_to_buffer(frame)
-        if bsm:
-            bsm.add_job((epoch_time,0,frame,'jpg'))
-        return rb.get_state()
+        app.logger.info('taking a single pictue')
+        image,info=camera.take_still_picture()
+        images = [image]
     else:
         app.logger.info('taking series of pictures')
-        images = camera.take_picture_series()
-        for image in images:
-            last_image = rb.add_to_buffer(image)
-        if bsm:
-           [bsm.add_job((epoch_time,x,images[x],'jpg')) for x in range(len(images))]
-        return rb.get_state()
+        images,info = camera.take_picture_series()
+    ts_server = round(time.time() * 1000)
+    info['delay']=ts_server - ts_sensor
+    app.logger.info('time delay trigger to end  %d',ts_server - ts_sensor)
+    for image in images:
+        last_image = rb.add_to_buffer(image)
+    if bsm:
+        [bsm.add_job((epoch_time,x,images[x],'jpg')) for x in range(len(images))]
+        bsm.add_job((epoch_time,0,json.dumps(info,cls=CustomJsonEncoder).encode(),'json'))
+    return rb.get_state()
 
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
 @auth.login_required
@@ -121,13 +122,10 @@ def api_start():
     camera_args = request.args.to_dict()
     camera.change_mode_if_required(camera_args)
     if camera.method == 'picture':
-        last=takepicture(single_picture=True)
+        last=takepicture(True,round(time.time() * 1000))
     else:
         last=takevideo()
     return jsonify(last)
-
-    #frame,last_image = take_picture()
-    #return(str(last_image))
 
 @app.route("/api/v1/resources/takesend")
 #@auth.login_required
@@ -139,7 +137,7 @@ def takesend():
     app.logger.info('time delay trigger to camera  %d',ts_server - ts_sensor)
     app.logger.info('camera method %s',camera.method)
     if camera.method == 'picture':
-        last =  takepicture(single_picture=False)
+        last =  takepicture(False,round(time.time() * 1000))
         ts_server = round(time.time() * 1000)
         app.logger.info('time delay trigger to end sequence %d',ts_server - ts_sensor)
     else:
@@ -154,9 +152,7 @@ def takephoto(ts_sensor):
     app.logger.info('time delay trigger to camera  %d',ts_server - ts_sensor)
     app.logger.info('camera method %s',camera.method)
     if camera.method == 'picture':
-        last =  takepicture(single_picture=False)
-        ts_server = round(time.time() * 1000)
-        app.logger.info('time delay trigger to end sequence %d',ts_server - ts_sensor)
+        last =  takepicture(False,ts_sensor)
     else:
         last = takevideo()
     
@@ -169,9 +165,6 @@ def api_saveconfig():
     camera.change_mode_if_required(camera_args)
     camera.save_camera_config(camera_args)
     return("config saved")
-
-
-
 
 @app.route('/images/<int:pid>', methods=['GET'])
 def image_frombuff(pid):
