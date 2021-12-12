@@ -1,12 +1,14 @@
 # picamera_collector
 
-To package helps you collect pictures for your AI project using the inexpensive Raspberry PI Camera.<br>
+This tool helps you collect pictures for your AI project using the inexpensive Raspberry PI Camera.<br>
+
 This tool supports three important steps
-* Focus - in video mode allows you to focus your camera - important with HQ Camera
+* Focus - a video mode allows you to focus your camera - important with HQ Camera
 * Lighting - find the best setting for you object - important if it's moving
 * Automation - use GPIO signals to trigger data collection
+* Storage - upload to cloud storage
 
-The trigger can come from an remote device
+The trigger can come from a remote device
 
 ## Instructions
 
@@ -16,14 +18,18 @@ If installing on a pi zero use lite image (also good option if not conncting PI 
 
 https://downloads.raspberrypi.org/raspios_oldstable_lite_armhf/images/raspios_oldstable_lite_armhf-2021-12-02/2021-12-02-raspios-buster-armhf-lite.zip
 
-Install buster raspios image using etcher <br>
+Install the buster raspios image using etcher <br>
 
 https://www.balena.io/etcher/
 
-mount on pc/mac <br>
-enable ssh on boot<br>
-touch /Volumes/boot/ssh
+## Prepare SD Crad
 
+### Enable ssh access - important if you plan to use headless
+
+remove an dreinsert SD Card to mount on pc/mac <br>
+```shell
+touch /Volumes/boot/ssh
+```
 
 ### If a pizero
 
@@ -103,13 +109,13 @@ sudo systemctl start camera.service
 sudo systemctl status camera.service
 ```
 
-## access
-
-http://localhost:5000
-
+## browser access
+```shell
+http://<hostname>:5000
+```
 userid password are defined in the yaml
 
-# plugins
+## plugins
 
 One definable triger and storage function
 
