@@ -110,8 +110,8 @@ def takepicture(single_picture,ts_sensor):
     for image in images:
         last_image = rb.add_to_buffer(image)
     if bsm:
-        [bsm.add_job((epoch_time,x,images[x],'jpg')) for x in range(len(images))]
-        bsm.add_job((epoch_time,0,json.dumps(info,cls=CustomJsonEncoder).encode(),'json'))
+        [bsm.add_job((ts_sensor,x,images[x],'jpg')) for x in range(len(images))]
+        bsm.add_job((ts_sensor,0,json.dumps(info,cls=CustomJsonEncoder).encode(),'json'))
     return rb.get_state()
 
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
