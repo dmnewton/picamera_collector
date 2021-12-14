@@ -77,6 +77,21 @@ sudo apt update
 sudo apt full-upgrade
 ```
 
+## time
+add local time server  <br>
+```shell
+sudo vim.tiny /etc/systemd/timesyncd.conf
+
+[Time]
+NTP=fritz.box
+
+sudo systemctl restart systemd-timesyncd.service 
+
+timedatectl timesync-status
+```
+
+
+
 ## Install python , pip and git
 ```shell
 sudo apt install python3 git python3-pip
