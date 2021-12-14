@@ -43,7 +43,7 @@ class PluginModule(object):
 
         blob_location = self.bucket.blob(destination_blob_name)
 
-        blob_location.upload_from_string(blob,content_type=content_type)
+        blob_location.upload_from_string(blob,content_type=content_type,timeout=600)
         logger.info(
             "File uploaded to {} ".format(
                  destination_blob_name
