@@ -59,9 +59,9 @@ class Camera(object):
         if self.state < 1:
             self.camera.resolution = self.to_res(self.resolution)
             if self.camera.resolution[0]>3000:
-                self.camera.framerate = 15
+                self.camera.framerate = 5
             else:    
-                self.camera.framerate = 30
+                self.camera.framerate = 10
             self.last_access = time.time()
             self.thread = eventlet.spawn(self._thread)
             eventlet.sleep(0)
