@@ -43,7 +43,15 @@ class PluginModule(object):
 
         blob_location = self.bucket.blob(destination_blob_name)
 
-        blob_location.upload_from_string(blob,content_type=content_type,timeout=600)
+        retry = True
+        while retry:
+            try:
+                blob_location.upload_from_string(blob,content_type=content_type,timeout=60)
+                retry = False
+            except:
+                logger.info("upload failed sleeping 5 minute")
+                eventlet.sleep(300)
+
         logger.info(
             "File uploaded to {} ".format(
                  destination_blob_name
@@ -70,6 +78,9 @@ class PluginModule(object):
 if __name__ == '__main__':
     bs = PluginModule()
     eventlet.sleep(1)
-    epoch_time = int(time.time()*1000)
-    bs.add_job((epoch_time,0,"abc"))
-    eventlet.sleep(10)
+    for i in range(10):
+        epoch_time = int(time.time()*1000)
+        data = " a string plus " + str(epoch_time)
+        bs.add_job((epoch_time,0,"abc","json"))
+        eventlet.sleep(10)
+    bs.thread_queue.join()
