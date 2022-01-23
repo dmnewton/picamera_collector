@@ -1,0 +1,6 @@
+gpio_pin: 4 
+mport: 8123
+mgroup: '225.0.0.250'
+mttl: 1
+takephoto: "takesend"
+lighston: "lighston"
