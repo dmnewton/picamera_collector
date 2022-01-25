@@ -1,12 +1,10 @@
-from gpiozero import Button
+from gpiozero import DigitalInputDevice
 import time
 from signal import pause
 import requests
 import yaml
 import pathlib
 import socketio
-
-import eventlet
 
 import logging
 logger = logging.getLogger(__name__)
@@ -24,12 +22,16 @@ class PluginModule(object):
 
         # self.auth=(self.config_data['user'],self.config_data['password'])
         signal_pin = int(self.config_data.get('gpio_pin'))
-        self.button = Button(signal_pin)
-        #self.button.when_deactivated = self.prepare_action
-        #self.button.when_activated = self.release_action
+        self.button = DigitalInputDevice(signal_pin)
 
         self.button.when_activated = self.prepare_action
         self.button.when_deactivated = self.release_action
+        
+        self.bounce_ts = 0
+        
+        self.bounce_avoid = 1000
+
+        self.bounce_last = None
 
         self.state = 0
     
@@ -37,43 +39,52 @@ class PluginModule(object):
         self.url_lights = [self.config_data['base_url'].format(x,self.config_data['lighston']) for x in self.config_data['hosts']]
 
         self.sess = requests.Session()
+
         #self.sess.verify = True
 
         self.sio = [socketio.Client() for x in self.config_data['hosts']]
-        self.connection_strings = ["http://{}:5000".format(x) for x in self.config_data['hosts']] 
+        self.connection_strings = ["http://{}:5000".format(x) for x in self.config_data['hosts']]
+
+        for i in range(len(self.sio)):
+            self.sio[i].connect(self.connection_strings[i])
         
     def setup_sio(self):
         for i in range(len(self.sio)):
-            if self.sio[i].sid == None:
-                 self.sio[i].connect(self.connection_strings[i])
+            if self.sio[i].connected == None:
+                self.sio[i].connect(self.connection_strings[i])
 
     def prepare_action(self):
-
-        self.setup_sio()
-        logger.info("prepared")
-        for x in self.url_lights:
-            myResponse = self.sess.get(x)
-        #myResponse = self.sess.get(self.url_lights,auth=self.auth)
-            logger.info("lighting resp %s", myResponse.text)
-        self.state = 1
-        eventlet.sleep(1)
+        ts = round(time.time() * 1000)
+        if (ts - self.bounce_ts) < self.bounce_avoid:
+            logger.debug("bounce avoid prepare")
+            self.state = 0
+        else:
+            if (self.state == 0):
+                self.bounce_ts = ts    
+                self.setup_sio()
+                logger.info("prepared")
+                for x in self.url_lights:
+                    myResponse = self.sess.get(x)
+                #myResponse = self.sess.get(self.url_lights,auth=self.auth)
+                logger.info("lighting resp %s", myResponse.text)
+                self.state = 1
+        
 
 
     def release_action(self):
-        self.setup_sio()
-        logger.info('release')
-        if self.state == 1:
-            ts = round(time.time() * 1000)
-            #url = self.url_take + '?ts=' + str(ts)
-            #logger.info("url %s",url)
-            for i in range(len(self.sio)):
-                self.sio[i].emit('takephoto',ts)
-            #myResponse = self.sess.get(url)
-            #myResponse = self.sess.get(url,auth=self.auth)
-            #logger.info("photo resp %s", myResponse.text)
-            self.state = 0
-        eventlet.sleep(1)
-    
+        ts = round(time.time() * 1000)
+        if (ts - self.bounce_ts) < self.bounce_avoid:
+            logger.debug("bounce avoid release")
+            self.state = 1
+        else:
+            if (self.state == 1):
+                self.bounce_ts = ts 
+                self.setup_sio()
+                logger.info('release')
+                for i in range(len(self.sio)):
+                    self.sio[i].emit('takephoto',ts)
+                self.state = 0
+   
     def activate(self,app):
         return
 
@@ -82,6 +93,7 @@ if __name__ == '__main__':
     "use on a remote pi to trigger camera"
  
     logger.info("starting")
+
 
     bb = PluginModule()
 
