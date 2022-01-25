@@ -82,7 +82,10 @@ class PluginModule(object):
                 self.setup_sio()
                 logger.info('release')
                 for i in range(len(self.sio)):
-                    self.sio[i].emit('takephoto',ts)
+                    try:
+                        self.sio[i].emit('takephoto',ts)
+                    except:
+                        logger.error("unable to send message %d",i)
                 self.state = 0
    
     def activate(self,app):
