@@ -70,12 +70,10 @@ class PluginModule(object):
                 for x in self.url_lights:
                     try:
                         myResponse = self.sess.get(x)
+                        logger.info("lighting resp %s", myResponse.text)
                     except:
                         logger.error("unable to send message %s",x)
-                #myResponse = self.sess.get(self.url_lights,auth=self.auth)
-                logger.info("lighting resp %s", myResponse.text)
                 self.state = 1
-        
 
 
     def release_action(self):
