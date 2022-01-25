@@ -46,12 +46,18 @@ class PluginModule(object):
         self.connection_strings = ["http://{}:5000".format(x) for x in self.config_data['hosts']]
 
         for i in range(len(self.sio)):
-            self.sio[i].connect(self.connection_strings[i])
+            try:
+                self.sio[i].connect(self.connection_strings[i])
+            except:
+                logger.error("unable to send message %s",i)
         
     def setup_sio(self):
         for i in range(len(self.sio)):
             if self.sio[i].connected == None:
-                self.sio[i].connect(self.connection_strings[i])
+                try:
+                    self.sio[i].connect(self.connection_strings[i])
+                except:
+                    logger.error("unable to send message %s",i)
 
     def prepare_action(self):
         ts = round(time.time() * 1000)
