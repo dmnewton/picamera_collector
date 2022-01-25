@@ -40,24 +40,22 @@ class PluginModule(object):
 
         self.sess = requests.Session()
 
+        self.reconnect = [True,True]
+
         #self.sess.verify = True
 
         self.sio = [socketio.Client() for x in self.config_data['hosts']]
         self.connection_strings = ["http://{}:5000".format(x) for x in self.config_data['hosts']]
 
-        for i in range(len(self.sio)):
-            try:
-                self.sio[i].connect(self.connection_strings[i])
-            except:
-                logger.error("unable to send message %s",i)
         
     def setup_sio(self):
         for i in range(len(self.sio)):
-            if self.sio[i].connected == None:
+            if self.reconnect[i]:
                 try:
                     self.sio[i].connect(self.connection_strings[i])
+                    self.reconnect[i] = False
                 except:
-                    logger.error("unable to send message %s",i)
+                    logger.error("unable to connect %s",i)
 
     def prepare_action(self):
         ts = round(time.time() * 1000)
@@ -94,6 +92,7 @@ class PluginModule(object):
                     try:
                         self.sio[i].emit('takephoto',ts)
                     except:
+                        self.reconnect[i] = True
                         logger.error("unable to send message %d",i)
                 self.state = 0
    
