@@ -31,7 +31,6 @@ class PluginModule(object):
         
         self.bounce_avoid = 1000
 
-        self.bounce_last = None
 
         self.state = 0
     
@@ -40,9 +39,7 @@ class PluginModule(object):
 
         self.sess = requests.Session()
 
-        self.reconnect = [True,True]
-
-        #self.sess.verify = True
+        self.reconnect = [True] * len(self.config_data['hosts'])
 
         self.sio = [socketio.Client() for x in self.config_data['hosts']]
         self.connection_strings = ["http://{}:5000".format(x) for x in self.config_data['hosts']]
