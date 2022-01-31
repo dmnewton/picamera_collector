@@ -44,15 +44,21 @@ class PluginModule(object):
         self.sio = [socketio.Client() for x in self.config_data['hosts']]
         self.connection_strings = ["http://{}:5000".format(x) for x in self.config_data['hosts']]
 
+    def connect_to_camera(self,i):
+        try:
+            self.sio[i].connect(self.connection_strings[i])
+            self.reconnect[i] = False
+        except Exception as e:
+            logger.error("unable to connect to %s", self.config_data['hosts'][i])
+            logger.error(e) 
+ 
         
     def setup_sio(self):
         for i in range(len(self.sio)):
             if self.reconnect[i]:
-                try:
-                    self.sio[i].connect(self.connection_strings[i])
-                    self.reconnect[i] = False
-                except:
-                    logger.error("unable to connect %s",i)
+                self.connect_to_camera(i)
+            #if ~self.sio[i].connected:
+            #    self.connect_to_camera(i)
 
     def prepare_action(self):
         ts = round(time.time() * 1000)
@@ -69,7 +75,7 @@ class PluginModule(object):
                         myResponse = self.sess.get(x)
                         logger.info("lighting resp %s", myResponse.text)
                     except:
-                        logger.error("unable to send message %s",x)
+                        logger.error("unable to send http message %s",x)
                 self.state = 1
 
 
@@ -85,10 +91,12 @@ class PluginModule(object):
                 logger.info('release')
                 for i in range(len(self.sio)):
                     try:
-                        self.sio[i].emit('takephoto',ts)
-                    except:
+                        #self.sio[i].emit('takephoto',ts)
+                        self.sio[i].call('takephoto',ts,timeout=5)
+                    except Exception as e:
                         self.reconnect[i] = True
-                        logger.error("unable to send message %d",i)
+                        logger.error("unable to send sio message %s",self.config_data['hosts'][i])
+                        logger.error(e) 
                 self.state = 0
    
     def activate(self,app):
