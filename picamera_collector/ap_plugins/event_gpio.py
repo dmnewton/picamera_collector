@@ -24,8 +24,12 @@ class PluginModule(object):
         signal_pin = int(self.config_data.get('gpio_pin'))
         self.button = DigitalInputDevice(signal_pin)
 
-        self.button.when_activated = self.prepare_action
-        self.button.when_deactivated = self.release_action
+        #self.button.when_activated = self.prepare_action
+        #self.button.when_deactivated = self.release_action
+
+        self.button.when_deactivated = self.prepare_action
+        self.button.when_activated = self.release_action
+
         
         self.bounce_ts = 0
         
