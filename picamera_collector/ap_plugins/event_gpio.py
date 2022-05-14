@@ -82,6 +82,10 @@ class PluginModule(object):
                         logger.error("unable to send http message %s",x)
                 self.state = 1
 
+    def success_call_back(x,reconnect,i):
+        reconnect[i] = False
+        logger.info("reconnect map %s", reconnect)
+
 
     def release_action(self):
         ts = round(time.time() * 1000)
@@ -95,15 +99,16 @@ class PluginModule(object):
                 logger.info('release')
                 for i in range(len(self.sio)):
                     try:
-                        #self.sio[i].emit('takephoto',ts)
-                        self.sio[i].call('takephoto',ts,timeout=5)
+                        self.reconnect[i] = True
+                        self.sio[i].emit('takephoto',ts,callback=self.success_call_back(self.reconnect,i))
+                        #self.sio[i].call('takephoto',ts,timeout=5)
                     except Exception as e:
                         self.reconnect[i] = True
                         logger.error("unable to send sio message %s",self.config_data['hosts'][i])
                         logger.error(e) 
                 self.state = 0
    
-    def activate(self,app):
+    def activate(self, app, eventbus):
         return
 
 if __name__ == '__main__':
