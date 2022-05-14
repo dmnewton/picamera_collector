@@ -1,5 +1,5 @@
 import io
-from async_timeout import timeout
+#from async_timeout import timeout
 import picamera
 import time
 import eventlet
