@@ -48,7 +48,7 @@ class PluginModule(object):
         eventlet.sleep(0)
         #threading.Thread(target=self.worker, daemon=True).start()
 
-    def set_turn_on_time(self):
+    def set_turn_on_time(self,*args):
         logger.info('turn on')
         self.relay.on()
         self.turn_off_time = time.time() + self.waittime
@@ -58,7 +58,8 @@ class PluginModule(object):
         return('OK')
         
 
-    def activate(self,app):
+    def activate(self,app,eventbus):
+        eventbus.add_listener('lightson', self.set_turn_on_time)
         app.add_url_rule('/api/v1/resources/lighston', view_func=self.set_turn_on_time_service)
 
 

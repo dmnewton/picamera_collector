@@ -1,4 +1,5 @@
 import io
+from async_timeout import timeout
 import picamera
 import time
 import eventlet
@@ -20,7 +21,7 @@ class Camera(object):
         self.last_access = 0
         self.frame = None
 
-        self.qq = eventlet.queue.LightQueue(1)
+        self.qq = eventlet.Semaphore()
 
         self.break_stop = None
 
@@ -86,7 +87,10 @@ class Camera(object):
         self.break_stop = False
         for frame in frames_iterator:
             self.frame = frame
-            self.qq.put(1)
+            # if client wants a frame release one
+            if self.qq.balance<1:
+                self.qq.release()
+
             eventlet.sleep(0)
 
             if self.break_stop:
@@ -94,21 +98,26 @@ class Camera(object):
                 frames_iterator.close()
                 break
 
-            # if there hasn't been any clients asking for frames in
-            # the last 10 seconds then stop the thread
-            if time.time() - self.last_access > 10:
+            # if there hasn't been any request for frames in
+            # the last 5 seconds then stop the thread
+            if time.time() - self.last_access > 5:
                 frames_iterator.close()
-                logger.info('Stopping camera thread due to inactivity.')
+                logger.info('Stopping camera thread due to 5 seconds of inactivity.')
                 break
+
         self.thread = None
 
     def get_frame(self):
         """Return the current camera frame."""
+
+        # remember when frame was sent for timeout
         self.last_access = time.time()
 
         # wait for a signal from the camera thread
-        self.qq.get(timeout=1)
-    
+        # send old image if no signal
+
+        self.qq.acquire(blocking=True,timeout=1)
+
         return self.frame
 
     def save_camera_config(self,camera_args):
@@ -197,12 +206,11 @@ class Camera(object):
         }
         return info
 
-    @staticmethod
-    def gen(camera):
+    def gen(self):
         """ package image in multipart/x-mixed-replace  """
-        camera.start_camera()
+        self.start_camera()
         while True:
-            frame = camera.get_frame()
+            frame = self.get_frame()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 

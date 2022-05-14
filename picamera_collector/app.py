@@ -4,6 +4,7 @@ import importlib
 import time
 import json
 
+
 from flask import (Flask, Response,  render_template, send_file, request ,jsonify)
 
 from flask_bootstrap import Bootstrap
@@ -14,6 +15,8 @@ from flask_socketio import SocketIO
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import logging
+
+from picamera_collector import eventbus
 FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=FORMAT,level=logging.INFO)
 
@@ -24,6 +27,10 @@ from picamera_collector import ring_buffer
 
 from picamera_collector import config
 cf = config.Configuration()
+
+
+from eventbus import EventBus
+event_bus = EventBus()
 
 plugins = cf.config_data['plugins']
 
@@ -84,8 +91,8 @@ def index():
 
 def takevideo():
     video_buffer=camera.take_video(10)
-    if bsm:
-        bsm.add_job((time.time(),0,video_buffer,'h264'))
+    if event_bus.listener_exists('storegoogle'):
+        event_bus.emit('storegoogle',(time.time(),0,video_buffer,'h264'))
     return 0
 
 class CustomJsonEncoder(json.JSONEncoder):
@@ -107,11 +114,13 @@ def takepicture(single_picture,ts_sensor):
     ts_server = round(time.time() * 1000)
     info['delay']=ts_server - ts_sensor
     app.logger.info('time delay trigger to end  %d',ts_server - ts_sensor)
+
     for image in images:
-        last_image = rb.add_to_buffer(image)
-    if bsm:
-        [bsm.add_job((ts_sensor,x,images[x],'jpg')) for x in range(len(images))]
-        bsm.add_job((ts_sensor,0,json.dumps(info,cls=CustomJsonEncoder).encode(),'json'))
+        rb.add_to_buffer(image)
+    
+    if event_bus.listener_exists('storegoogle'):
+        [event_bus.emit('storegoogle',(ts_sensor,x,images[x],'jpg')) for x in range(len(images))]
+        event_bus.emit('storegoogle',(ts_sensor,0,json.dumps(info,cls=CustomJsonEncoder).encode(),'json'))
     return rb.get_state()
 
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
@@ -187,8 +196,10 @@ def api_lastpicturea():
 def video_feed():
     global camera
     app.logger.info('video_feed')
-    return Response(camerapi.Camera.gen(camera),
+    return Response(camera.gen(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+    #return Response(camerapi.Camera.gen(camera),
+    #                mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @sio.event
 def connect(sid):
@@ -200,13 +211,14 @@ def disconnect():
 
 if __name__ == '__main__':
 
+    event_bus.add_listener('takepicture', takepicture)
+
     plugins_instances = [p.PluginModule() for p in plugins_modules]
 
-    bsm = None
     for p  in plugins_instances:
-        p.activate(app)
-        if hasattr(p, "add_job"):
-            bsm = p
+        p.activate(app,event_bus)
+ 
+    app.logger.info('read to start')
 
     #WSGIRequestHandler.protocol_version = "HTTP/1.1"
     

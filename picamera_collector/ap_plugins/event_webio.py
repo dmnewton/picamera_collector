@@ -1,8 +1,9 @@
 import time
 import yaml
 import pathlib
-import socket
 import eventlet
+
+import eventlet.green.socket as socket
 
 import logging
 logger = logging.getLogger(__name__)
@@ -18,35 +19,28 @@ class PluginModule(object):
         with open(path / 'event_webio.yaml') as file:
             self.config_data = yaml.load(file, Loader=yaml.FullLoader)
 
+
+
         self.bounce_ts = 0
         
         self.bounce_avoid = 1000
 
         self.state = 0
 
-        self.picture_function = None
-        self.lights_function = None
-
         self.io_port = self.config_data.get('io_port') 
 
         self.wIO_client = None
         self.try_configure_connection()
 
+        self.eventbus=None
+
         self.run()
-
-    def set_function_picture(self,funct):
-        logger.info('set function picture')
-        self.picture_function=funct
-
-    def set_function_lights(self,funct):
-        logger.info('set function lights')
-        self.lights_function=funct
     
     def configure_connection(self):
-        client_wIO_IP = self.config_data.get('web_io')  # Web-IO device A IP-Address (client)
+        client_wIO_IP =  socket.gethostbyname(self.config_data.get('web_io') )
         port = 80
 
-        self.wIO_client = eventlet.green.socket.create_connection((client_wIO_IP, port))
+        self.wIO_client = socket.create_connection((client_wIO_IP, port))
 
         pwinall = ""
 
@@ -68,8 +62,8 @@ class PluginModule(object):
             self.configure_connection()
             logger.info('sucessfully configured connection')
             return False
-        except:
-            logger.info('failed to configure connection')
+        except Exception as e:
+            logger.info('failed to configure connection %s',e)
             eventlet.sleep(10)
             return True
             
@@ -81,11 +75,10 @@ class PluginModule(object):
                 restart=self.try_configure_connection()
                 continue
             try:
-                logger.info("got message")
                 recv = self.wIO_client.recv(4096)
                 yield recv
             except Exception as e:
-                logger.info("unexpected exception on socket")
+                logger.info("unexpected exception on socket %s",e)
                 restart=True
     
     @staticmethod
@@ -105,10 +98,10 @@ class PluginModule(object):
 
         input_pin_value = PluginModule.LSB(int(parts[3]),self.io_port)
 
-        logger.info('value %s ', input_pin_value)
+        logger.debug('value %s ', input_pin_value)
 
         if self.state == input_pin_value:
-            logger.info('i did not change')
+            logger.debug('i did not change')
             return
 
         self.state = input_pin_value
@@ -121,12 +114,10 @@ class PluginModule(object):
             
         if input_pin_value:
             logger.info('light on')
-            if self.lights_function:
-                   self.lights_function(False,ts_server)
+            self.eventbus.emit('lightson',None)
         else:
             logger.info('take photo')
-            if self.picture_function:
-                self.picture_function(False,ts_server)
+            self.eventbus.emit('takepicture',False,ts_server)
           
 
     def worker(self):
@@ -135,10 +126,10 @@ class PluginModule(object):
                 # sometime you get multiple messages in one package 
                 msg_strs = [x.decode() for x in msg.split(b'\x00')]
                 for msg_str in msg_strs:
-                    logger.info("process message")
-                    self.process_message(msg_str)
-            except:
-                 logger.info('bad message ')
+                    if len(msg_str)>0:
+                        self.process_message(msg_str)
+            except Exception as e:
+                 logger.info('bad message %s',e)
 
 
     def run(self):
@@ -146,7 +137,8 @@ class PluginModule(object):
         eventlet.spawn(self.worker)
         eventlet.sleep(0)
        
-    def activate(self,app):
+    def activate(self,app,eventbus):
+        self.eventbus=eventbus
         return
 
 if __name__ == '__main__':

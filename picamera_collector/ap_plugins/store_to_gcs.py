@@ -49,8 +49,8 @@ class PluginModule(object):
                 blob_location.upload_from_string(blob,content_type=content_type,timeout=60)
                 retry = False
             except:
-                logger.info("upload failed sleeping 5 minute")
-                eventlet.sleep(300)
+                logger.error("upload failed sleeping 1 minute")
+                eventlet.sleep(60)
 
         logger.info(
             "File uploaded to {} ".format(
@@ -72,7 +72,8 @@ class PluginModule(object):
     def add_job(self,job):
         self.thread_queue.put(job)
     
-    def activate(self,app):
+    def activate(self,app,eventbus):
+        eventbus.add_listener('storegoogle', self.add_job)
         return
 
 if __name__ == '__main__':
