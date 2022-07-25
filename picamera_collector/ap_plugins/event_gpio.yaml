@@ -1,4 +1,5 @@
-gpio_pin: 17 
+gpio_pin: 4
+gpio_normal: low
 hosts:
   #- "caml2c1.local"
   #- "caml2c2.local"

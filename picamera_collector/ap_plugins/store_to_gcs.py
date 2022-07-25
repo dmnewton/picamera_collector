@@ -4,10 +4,10 @@ import yaml
 import pathlib
 import datetime
 
-import eventlet
+#import eventlet
 
-#from queue import Queue
-#import threading 
+from queue import Queue
+import threading 
 
 from google.cloud import storage
 
@@ -32,7 +32,7 @@ class PluginModule(object):
         self.myhost = os.uname()[1]
         self.storage_client = storage.Client()
         self.bucket = self.storage_client.bucket(self.config_data['bucket'])
-        self.thread_queue = eventlet.Queue()
+        self.thread_queue = Queue()
         self.run()
 
     def store_action(self,epoch_time,sequence,blob,file_suffix):
@@ -50,7 +50,8 @@ class PluginModule(object):
                 retry = False
             except:
                 logger.error("upload failed sleeping 1 minute")
-                eventlet.sleep(60)
+                #eventlet.sleep(60)
+                time.sleep(60)
 
         logger.info(
             "File uploaded to {} ".format(
@@ -66,11 +67,13 @@ class PluginModule(object):
             self.thread_queue.task_done()
     
     def run(self):
-        eventlet.spawn(self.worker)
-        eventlet.sleep(0)
+        #eventlet.spawn(self.worker)
+        #eventlet.sleep()
+        threading.Thread(target=self.worker,daemon=True).start()
 
     def add_job(self,job):
         self.thread_queue.put(job)
+
     
     def activate(self,app,eventbus):
         eventbus.add_listener('storegoogle', self.add_job)
@@ -78,10 +81,10 @@ class PluginModule(object):
 
 if __name__ == '__main__':
     bs = PluginModule()
-    eventlet.sleep(1)
+    #eventlet.sleep(1)
     for i in range(10):
         epoch_time = int(time.time()*1000)
         data = " a string plus " + str(epoch_time)
         bs.add_job((epoch_time,0,"abc","json"))
-        eventlet.sleep(10)
+        #eventlet.sleep(10)
     bs.thread_queue.join()

@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=FORMAT,level=logging.INFO)
 
-import eventlet
+#import eventlet
 
 class EventBus():
     def __init__(self):
@@ -25,7 +25,9 @@ class EventBus():
           del self.listeners[event_name]
 
     def emit(self, event_name, *args):
+
         listeners = self.listeners.get(event_name, [])
         for listener in listeners:
-            eventlet.spawn_n(listener,*args)
-            eventlet.sleep()
+            #eventlet.spawn_n(listener,*args)
+            #eventlet.sleep()
+            listener(*args)
