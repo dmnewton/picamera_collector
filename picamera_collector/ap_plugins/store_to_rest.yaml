@@ -1,0 +1,4 @@
+# configuretion for google cloud storage plugin
+hostname:  MGC12F826PMD6T.fritz.box
+port: 5001
+url: file-upload

@@ -91,8 +91,8 @@ def index():
 
 def takevideo():
     video_buffer=camera.take_video(10)
-    if event_bus.listener_exists('storegoogle'):
-        event_bus.emit('storegoogle',(time.time(),0,video_buffer,'h264'))
+    if event_bus.listener_exists('storefile'):
+        event_bus.emit('storefile',(time.time(),0,video_buffer,'h264'))
     return 0
 
 class CustomJsonEncoder(json.JSONEncoder):
@@ -118,9 +118,9 @@ def takepicture(single_picture,ts_sensor):
     for image in images:
         rb.add_to_buffer(image)
     
-    if event_bus.listener_exists('storegoogle'):
-        [event_bus.emit('storegoogle',(ts_sensor,x,images[x],'jpg')) for x in range(len(images))]
-        event_bus.emit('storegoogle',(ts_sensor,0,json.dumps(info,cls=CustomJsonEncoder).encode(),'json'))
+    if event_bus.listener_exists('storefile'):
+        [event_bus.emit('storefile',(ts_sensor,x,images[x],'jpg')) for x in range(len(images))]
+        event_bus.emit('storefile',(ts_sensor,0,json.dumps(info,cls=CustomJsonEncoder).encode(),'json'))
     return rb.get_state()
 
 @app.route('/api/v1/resources/takepicture', methods=['GET'])
