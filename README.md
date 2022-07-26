@@ -143,4 +143,15 @@ edit app_settings.yaml
 scp google-service-key.json pi@raspberrypi:
 ```
 
+## when using a lan network adaptor on pi zero
 
+```shell
+sudo nano /boot/config.txt
+at end add
+dtoverlay=disable-wifi
+dtoverlay=disable-bt
+
+sudo nano /etc/network/if-pre-up.d/ethtool
+at end add
+$ETHTOOL --change eth0 advertise 0x008
+```
