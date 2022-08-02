@@ -4,7 +4,7 @@ import yaml
 import pathlib
 import datetime
 
-import set_proxy
+import ap_plugins.set_proxy
 
 #import eventlet
 
