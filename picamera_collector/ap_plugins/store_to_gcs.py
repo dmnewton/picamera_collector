@@ -4,6 +4,8 @@ import yaml
 import pathlib
 import datetime
 
+import set_proxy
+
 #import eventlet
 
 from queue import Queue
