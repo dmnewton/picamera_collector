@@ -180,9 +180,9 @@ def image_frombuff(pid):
     global rb
     frame=rb.get(pid)
     return send_file(io.BytesIO(frame),
-                     attachment_filename=str(pid)+'.jpg',
+                     download_name=str(pid)+'.jpg',
                      mimetype='image/jpg',
-                     cache_timeout=-1)
+                     max_age=-1)
 
 @app.route('/api/v1/resources/lastpicture', methods=['GET'])
 @auth.login_required
