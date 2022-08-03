@@ -4,6 +4,8 @@ import yaml
 import pathlib
 import datetime
 
+import ap_plugins.set_proxy
+
 #import eventlet
 
 from queue import Queue
