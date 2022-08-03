@@ -95,14 +95,20 @@ timedatectl timesync-status
 ## Install python , pip and git
 ```shell
 sudo apt install python3 git python3-pip
+sudo apt install libgfortran5 libatlas3-base # for numpy
+```
+
+## update pip packages in requiremnets - note numpy set to specific vesion
+```shell
+pip3 install -r requirements.txt -U
 ```
 
 ## update pip packages
 does not work!
 ```shell
-pip3 freeze > requirements.txt
-sed -i 's/==/>=/g' requirements.txt 
-pip3 install -r requirements.txt --upgrade
+pip3 freeze > all_packages.txt
+sed -i 's/==/>=/g' all_packages.txt 
+pip3 install -r all_packages.txt --upgrade
 ```
 
 ## install software as pip module or clone
