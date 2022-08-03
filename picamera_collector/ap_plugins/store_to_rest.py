@@ -35,7 +35,7 @@ class PluginModule(object):
         series = '{:02d}'.format(sequence)
         content_type = mime_types.get(file_suffix)
         dt = datetime.datetime.fromtimestamp(epoch_time/1000).strftime('%Y-%m-%d')
-        destination_blob_name = "{}/{}-{}-{}.{}".format(dt,self.myhost,epoch_time,series,file_suffix)
+        destination_blob_name = "{}-{}-{}-{}.{}".format(dt,self.myhost,epoch_time,series,file_suffix)
 
         retry = True
         while retry:
@@ -43,7 +43,7 @@ class PluginModule(object):
                 #stream_str = io.BytesIO(blob.encode())
                 stream_str = io.BytesIO(blob)
                 stream_str.seek(0)
-                file = {'file': (destination_blob_name, stream_str, 'image/jpg')}
+                file = {'file': (destination_blob_name, stream_str, mime_types.get(file_suffix))}
                 #header = {"application-id": appID, "secret-key": restKey, "application-type": "REST"}
                 r = requests.post(self.url, files=file)
                 if r.status_code != 201:
