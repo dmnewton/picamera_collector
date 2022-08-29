@@ -35,7 +35,7 @@ class PluginModule(object):
         series = '{:02d}'.format(sequence)
         content_type = mime_types.get(file_suffix)
         dt = datetime.datetime.fromtimestamp(epoch_time/1000).strftime('%Y-%m-%d')
-        destination_blob_name = "{}-{}-{}-{}.{}".format(dt,self.myhost,epoch_time,series,file_suffix)
+        destination_blob_name = "{}_{}_{}_{}.{}".format(dt,self.myhost,epoch_time,series,file_suffix)
 
         retry = True
         while retry:
@@ -46,13 +46,13 @@ class PluginModule(object):
                 file = {'file': (destination_blob_name, stream_str, mime_types.get(file_suffix))}
                 #header = {"application-id": appID, "secret-key": restKey, "application-type": "REST"}
                 r = requests.post(self.url, files=file)
-                if r.status_code != 201:
+                if r.status_code not in [200, 201]:
                     raise Exception('return coode not 201')
                 retry = False
             except Exception as e:
                 logger.error('Failed to upload to rest api: '+ str(e))
-                logger.error("sleeping 1 minute")
-                time.sleep(60)
+                logger.error("sleeping 5 seconds")
+                time.sleep(5)
 
         logger.info(
             "File uploaded to {} ".format(

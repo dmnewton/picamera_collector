@@ -1,4 +1,4 @@
 # configuretion for google cloud storage plugin
-hostname:  MGC12F826PMD6T.fritz.box
-port: 5001
-url: file-upload
+hostname: MGC12F826PMD6T.niehl.ford.com 
+port: 8000
+url: api/receive_images
