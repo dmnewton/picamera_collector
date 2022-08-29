@@ -76,7 +76,11 @@ class PluginModule(object):
                 continue
             try:
                 recv = self.wIO_client.recv(4096)
-                yield recv
+                if len(recv)==0:
+                   logger.info("recived disconnect ")
+                   restart=True
+                else:
+                   yield recv
             except Exception as e:
                 logger.info("unexpected exception on socket %s",e)
                 restart=True
